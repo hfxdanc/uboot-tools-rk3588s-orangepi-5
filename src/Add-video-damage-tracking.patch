@@ -1,0 +1,4136 @@
+From patchwork Mon Aug 21 13:50:58 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823643
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=jAFdt8C3;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv611rHqz1yg0
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:51:37 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 69F2487066;
+	Mon, 21 Aug 2023 15:51:29 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="jAFdt8C3";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 71CEC8706D; Mon, 21 Aug 2023 15:51:28 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com
+ [IPv6:2a00:1450:4864:20::32e])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 3320B87062
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:25 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wm1-x32e.google.com with SMTP id
+ 5b1f17b1804b1-3fef56f7222so2727775e9.2
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625884; x=1693230684;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=0KM0F1+WkNhDdn0zbbXHFFjqAdCr64hX7QvIzy6/iyI=;
+ b=jAFdt8C3owZgLvkS3GxcS5N+GiTxn30Z/xJkqzPDEYfC0PDH1kIsDI4pb6eHKAFVBt
+ PLqr4R9Sdmb05o76fez0U9nTmmv97QjcaeHGc0adZliwf33YdMgotCTaUiHc/nhkpLWw
+ c8rHP6jWgFPGn5Y45QEtPjQFEuV0nP0SkMONJorI+ci6NUadDN8X0tZNK5GoF1lvhF4o
+ mQZs5xJfJ6evaIBX7srcue8NUq4BtyhQ18vVYm0nCIPEltA23PBpkcejhCv6g5o/4puI
+ sgF/+jj8BhBQFKhPEIktVLWcqveScR/ngqiv1iDRHrCL6flPhtCsrpShY+rzilzpJdtC
+ fkJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625884; x=1693230684;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=0KM0F1+WkNhDdn0zbbXHFFjqAdCr64hX7QvIzy6/iyI=;
+ b=gWHm6TE1o6bFZMTHoyWCi4QgdvFQkn06zRip9uOn3HqDzCG7KLnrXsFUdYdugOcadS
+ yQH0TYQ9YCGnJEItFC8+BAPuij69++YczOI2dzUQz6ejqfjFnTORccJmFginC+ZQynSw
+ ygcqWBt7iXKWwm2BNaTOS0ZbXxZuQrdebM6QD55CSsB+YnJ/21Q4txo4VOIzT+g2LmU4
+ YhR1Ec8+2HGk3w1oWalKPpGcBc3y3y7ADgy/Kt0L4pFhAmBewW+wlGtrTxdoIbRmcMwx
+ 6xx1bS9ZrdHzFpTAB7myHjowwbIvRmhpNDr1e+ROx71myEhCEhnz0o6tjGmHTmebIiZB
+ Axiw==
+X-Gm-Message-State: AOJu0Yw7o7394U5eAr5ipSyfIWmc1YVzBHdp8jslW0qPlsoIXMjiuI6c
+ SaZaVpf+ZihLZ51797OE439hQFEZL4o=
+X-Google-Smtp-Source: 
+ AGHT+IGiiJu3kdw60kWynu1HizRmCX0l3/hesikD0kGHzt9jbq6D24m4A0InLSpbaBLDcUVjniBVKA==
+X-Received: by 2002:a05:600c:3799:b0:3fe:2011:a7ce with SMTP id
+ o25-20020a05600c379900b003fe2011a7cemr5345546wmr.6.1692625884228;
+ Mon, 21 Aug 2023 06:51:24 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.22
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:23 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 01/13] video: test: Split copy frame buffer check into a
+ function
+Date: Mon, 21 Aug 2023 16:50:58 +0300
+Message-Id: <20230821135111.3558478-2-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+While checking frame buffer contents, the video tests also check if the
+copy frame buffer contents match the main frame buffer. To test if only
+the modified regions are updated after a sync, we will need to create
+situations where the two are mismatched. Split this check into another
+function that we can skip calling, since we won't want it to error on
+those mismatched cases.
+
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+Changes in v5:
+- Add patch "video: test: Split copy frame buffer check into a function"
+
+ test/dm/video.c | 69 +++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 58 insertions(+), 11 deletions(-)
+
+diff --git a/test/dm/video.c b/test/dm/video.c
+index d907f681600b..641a6250100a 100644
+--- a/test/dm/video.c
++++ b/test/dm/video.c
+@@ -55,9 +55,6 @@ DM_TEST(dm_test_video_base, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
+  * size of the compressed data. This provides a pretty good level of
+  * certainty and the resulting tests need only check a single value.
+  *
+- * If the copy framebuffer is enabled, this compares it to the main framebuffer
+- * too.
+- *
+  * @uts:	Test state
+  * @dev:	Video device
+  * Return: compressed size of the frame buffer, or -ve on error
+@@ -66,7 +63,6 @@ static int compress_frame_buffer(struct unit_test_state *uts,
+ 				 struct udevice *dev)
+ {
+ 	struct video_priv *priv = dev_get_uclass_priv(dev);
+-	struct video_priv *uc_priv = dev_get_uclass_priv(dev);
+ 	uint destlen;
+ 	void *dest;
+ 	int ret;
+@@ -82,16 +78,34 @@ static int compress_frame_buffer(struct unit_test_state *uts,
+ 	if (ret)
+ 		return ret;
+ 
+-	/* Check here that the copy frame buffer is working correctly */
+-	if (IS_ENABLED(CONFIG_VIDEO_COPY)) {
+-		ut_assertf(!memcmp(uc_priv->fb, uc_priv->copy_fb,
+-				   uc_priv->fb_size),
+-				   "Copy framebuffer does not match fb");
+-	}
+-
+ 	return destlen;
+ }
+ 
++/**
++ * check_copy_frame_buffer() - Compare main frame buffer to copy
++ *
++ * If the copy frame buffer is enabled, this compares it to the main
++ * frame buffer. Normally they should have the same contents after a
++ * sync.
++ *
++ * @uts:	Test state
++ * @dev:	Video device
++ * Return: 0, or -ve on error
++ */
++static int check_copy_frame_buffer(struct unit_test_state *uts,
++				   struct udevice *dev)
++{
++	struct video_priv *priv = dev_get_uclass_priv(dev);
++
++	if (!IS_ENABLED(CONFIG_VIDEO_COPY))
++		return 0;
++
++	ut_assertf(!memcmp(priv->fb, priv->copy_fb, priv->fb_size),
++		   "Copy framebuffer does not match fb");
++
++	return 0;
++}
++
+ /*
+  * Call this function at any point to halt and show the current display. Be
+  * sure to run the test with the -l flag.
+@@ -155,24 +169,30 @@ static int dm_test_video_text(struct unit_test_state *uts)
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	ut_assertok(vidconsole_select_font(con, "8x16", 0));
+ 	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_putc_xy(con, 0, 0, 'a');
+ 	ut_asserteq(79, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	vidconsole_putc_xy(con, 0, 0, ' ');
+ 	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	for (i = 0; i < 20; i++)
+ 		vidconsole_putc_xy(con, VID_TO_POS(i * 8), 0, ' ' + i);
+ 	ut_asserteq(273, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	vidconsole_set_row(con, 0, WHITE);
+ 	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	for (i = 0; i < 20; i++)
+ 		vidconsole_putc_xy(con, VID_TO_POS(i * 8), 0, ' ' + i);
+ 	ut_asserteq(273, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -191,24 +211,30 @@ static int dm_test_video_text_12x22(struct unit_test_state *uts)
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	ut_assertok(vidconsole_select_font(con, "12x22", 0));
+ 	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_putc_xy(con, 0, 0, 'a');
+ 	ut_asserteq(89, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	vidconsole_putc_xy(con, 0, 0, ' ');
+ 	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	for (i = 0; i < 20; i++)
+ 		vidconsole_putc_xy(con, VID_TO_POS(i * 8), 0, ' ' + i);
+ 	ut_asserteq(363, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	vidconsole_set_row(con, 0, WHITE);
+ 	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	for (i = 0; i < 20; i++)
+ 		vidconsole_putc_xy(con, VID_TO_POS(i * 8), 0, ' ' + i);
+ 	ut_asserteq(363, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -226,6 +252,7 @@ static int dm_test_video_chars(struct unit_test_state *uts)
+ 	ut_assertok(vidconsole_select_font(con, "8x16", 0));
+ 	vidconsole_put_string(con, test_string);
+ 	ut_asserteq(466, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -247,19 +274,23 @@ static int dm_test_video_ansi(struct unit_test_state *uts)
+ 	video_clear(con->parent);
+ 	video_sync(con->parent, false);
+ 	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* test clear escape sequence: [2J */
+ 	vidconsole_put_string(con, "A\tB\tC"ANSI_ESC"[2J");
+ 	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* test set-cursor: [%d;%df */
+ 	vidconsole_put_string(con, "abc"ANSI_ESC"[2;2fab"ANSI_ESC"[4;4fcd");
+ 	ut_asserteq(143, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* test colors (30-37 fg color, 40-47 bg color) */
+ 	vidconsole_put_string(con, ANSI_ESC"[30;41mfoo"); /* black on red */
+ 	vidconsole_put_string(con, ANSI_ESC"[33;44mbar"); /* yellow on blue */
+ 	ut_asserteq(272, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -292,11 +323,13 @@ static int check_vidconsole_output(struct unit_test_state *uts, int rot,
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	ut_assertok(vidconsole_select_font(con, "8x16", 0));
+ 	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* Check display wrap */
+ 	for (i = 0; i < 120; i++)
+ 		vidconsole_put_char(con, 'A' + i % 50);
+ 	ut_asserteq(wrap_size, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* Check display scrolling */
+ 	for (i = 0; i < SCROLL_LINES; i++) {
+@@ -304,11 +337,13 @@ static int check_vidconsole_output(struct unit_test_state *uts, int rot,
+ 		vidconsole_put_char(con, '\n');
+ 	}
+ 	ut_asserteq(scroll_size, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* If we scroll enough, the screen becomes blank again */
+ 	for (i = 0; i < SCROLL_LINES; i++)
+ 		vidconsole_put_char(con, '\n');
+ 	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -383,6 +418,7 @@ static int dm_test_video_bmp(struct unit_test_state *uts)
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+ 	ut_asserteq(1368, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -402,6 +438,7 @@ static int dm_test_video_bmp8(struct unit_test_state *uts)
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+ 	ut_asserteq(1247, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -425,6 +462,7 @@ static int dm_test_video_bmp16(struct unit_test_state *uts)
+ 
+ 	ut_assertok(video_bmp_display(dev, dst, 0, 0, false));
+ 	ut_asserteq(3700, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -448,6 +486,7 @@ static int dm_test_video_bmp24(struct unit_test_state *uts)
+ 
+ 	ut_assertok(video_bmp_display(dev, dst, 0, 0, false));
+ 	ut_asserteq(3656, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -471,6 +510,7 @@ static int dm_test_video_bmp24_32(struct unit_test_state *uts)
+ 
+ 	ut_assertok(video_bmp_display(dev, dst, 0, 0, false));
+ 	ut_asserteq(6827, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -489,6 +529,7 @@ static int dm_test_video_bmp32(struct unit_test_state *uts)
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+ 	ut_asserteq(2024, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -505,6 +546,7 @@ static int dm_test_video_bmp_comp(struct unit_test_state *uts)
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+ 	ut_asserteq(1368, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -524,6 +566,7 @@ static int dm_test_video_comp_bmp32(struct unit_test_state *uts)
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+ 	ut_asserteq(2024, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -543,6 +586,7 @@ static int dm_test_video_comp_bmp8(struct unit_test_state *uts)
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+ 	ut_asserteq(1247, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -558,6 +602,7 @@ static int dm_test_video_truetype(struct unit_test_state *uts)
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_put_string(con, test_string);
+ 	ut_asserteq(12174, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -579,6 +624,7 @@ static int dm_test_video_truetype_scroll(struct unit_test_state *uts)
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_put_string(con, test_string);
+ 	ut_asserteq(34287, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -600,6 +646,7 @@ static int dm_test_video_truetype_bs(struct unit_test_state *uts)
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_put_string(con, test_string);
+ 	ut_asserteq(29471, compress_frame_buffer(uts, dev));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+
+From patchwork Mon Aug 21 13:50:59 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823644
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=mYzIbw17;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv6B5sZGz1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:51:46 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id AD34B8706B;
+	Mon, 21 Aug 2023 15:51:31 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="mYzIbw17";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 5EF078707C; Mon, 21 Aug 2023 15:51:30 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com
+ [IPv6:2a00:1450:4864:20::42b])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 8B77787069
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:27 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wr1-x42b.google.com with SMTP id
+ ffacd0b85a97d-307d20548adso2907788f8f.0
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625887; x=1693230687;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=2OB7382go0g6JBjezy6TmzGfi6gIlYCFDFe4xM7HRw8=;
+ b=mYzIbw17s5ut2Lj8TmUyEmZZuMpoWf/YpZMisLloBGvTOI6o9/p8nP2M17yjk++h8P
+ 8+GH169jMY+6EuzecVUKktHLjLULhqcSGVgb+K8TH4Z0MkPhLZg6u+23TnjErs5v1VYS
+ +euy4y8wSAudLGdJHtR26NtBqeJHDFiK6ves/aUe6PVWoPVDofUTUC53I4mvF96uWF8K
+ NxLW9B5KIoY0T2WpxZUDwabQASQORqw1sA33K5oTD5OvFTS081ZnJT9otEq9+EgTySU5
+ e9RQTRRZ1lstBqBTAQHRXPAniy7qhyu+ptlO9RhqLC6R08WOBN8Fwz7r4fVsnuuGMEgm
+ CatQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625887; x=1693230687;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=2OB7382go0g6JBjezy6TmzGfi6gIlYCFDFe4xM7HRw8=;
+ b=ChLsD8uyfsbRsBr3u3v4RBW8IRqsNDwAduakdrWkASxSDmmx1fr/AROSBC5feYGGDe
+ hS2CHTTA7mzZBgx65Trp5EItwl/T+Vp9i6ot9yz9QlTUNNEcPawZEdr+wrwsTgDaxH2v
+ snQjENvBTKP8nVEyAFqDmM2dOMLBHKEnI/a8MuKKZMuMu9dujekXUR7zTMOWyhTLK6Gc
+ D8F+qwz8FIhnEGMc1i1LvXmjDCs7delvdWCetg6JqpaHZUQQc6Ru03gSKWXkedKTdHsF
+ IFdkr4qm3W7Rsy2BwYQZN2XrZO5IuLkQjVOtfryPfMGux/37jUX8zNJ0y+TL8k42PlEC
+ Xicw==
+X-Gm-Message-State: AOJu0YwlYwARbrwNV25POhyWxcoym3cQztI8SjGOeCzdsQys/HqRUQV+
+ wqnhOKThUMfcGC8MZ8gLFE2KT2+SxVA=
+X-Google-Smtp-Source: 
+ AGHT+IHSYU3/G4dWV8P3egqgpph9YxOl4+mH1vDWUtosphrFiVQk7BNu/zdvNsUiJiU3qzGO9VCxdg==
+X-Received: by 2002:a5d:44cf:0:b0:313:f33c:24c4 with SMTP id
+ z15-20020a5d44cf000000b00313f33c24c4mr4457731wrr.39.1692625886757;
+ Mon, 21 Aug 2023 06:51:26 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.24
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:26 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 02/13] video: test: Support checking copy frame buffer
+ contents
+Date: Mon, 21 Aug 2023 16:50:59 +0300
+Message-Id: <20230821135111.3558478-3-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+The video tests have a helper function to generate a pseudo-digest of
+frame buffer contents, but it only does so for the main one. There is
+another check that the copy frame buffer is the same as that. But
+neither is enough to test if only the modified regions are copied to the
+copy frame buffer, since we will want the two to be different in very
+specific ways.
+
+Add a boolean argument to the existing helper function to indicate which
+frame buffer we want to inspect, and update the existing callers.
+
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+Changes in v5:
+- Add patch "video: test: Support checking copy frame buffer contents"
+
+ test/dm/video.c | 76 ++++++++++++++++++++++++++-----------------------
+ 1 file changed, 41 insertions(+), 35 deletions(-)
+
+diff --git a/test/dm/video.c b/test/dm/video.c
+index 641a6250100a..b9ff3da10c18 100644
+--- a/test/dm/video.c
++++ b/test/dm/video.c
+@@ -57,22 +57,28 @@ DM_TEST(dm_test_video_base, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
+  *
+  * @uts:	Test state
+  * @dev:	Video device
++ * @use_copy:	Use copy frame buffer if available
+  * Return: compressed size of the frame buffer, or -ve on error
+  */
+ static int compress_frame_buffer(struct unit_test_state *uts,
+-				 struct udevice *dev)
++				 struct udevice *dev,
++				 bool use_copy)
+ {
+ 	struct video_priv *priv = dev_get_uclass_priv(dev);
+ 	uint destlen;
+ 	void *dest;
+ 	int ret;
+ 
++	if (!IS_ENABLED(CONFIG_VIDEO_COPY))
++		use_copy = false;
++
+ 	destlen = priv->fb_size;
+ 	dest = malloc(priv->fb_size);
+ 	if (!dest)
+ 		return -ENOMEM;
+ 	ret = BZ2_bzBuffToBuffCompress(dest, &destlen,
+-				       priv->fb, priv->fb_size,
++				       use_copy ? priv->copy_fb : priv->fb,
++				       priv->fb_size,
+ 				       3, 0, 0);
+ 	free(dest);
+ 	if (ret)
+@@ -168,30 +174,30 @@ static int dm_test_video_text(struct unit_test_state *uts)
+ 	ut_assertok(video_get_nologo(uts, &dev));
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	ut_assertok(vidconsole_select_font(con, "8x16", 0));
+-	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_asserteq(46, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_putc_xy(con, 0, 0, 'a');
+-	ut_asserteq(79, compress_frame_buffer(uts, dev));
++	ut_asserteq(79, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	vidconsole_putc_xy(con, 0, 0, ' ');
+-	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_asserteq(46, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	for (i = 0; i < 20; i++)
+ 		vidconsole_putc_xy(con, VID_TO_POS(i * 8), 0, ' ' + i);
+-	ut_asserteq(273, compress_frame_buffer(uts, dev));
++	ut_asserteq(273, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	vidconsole_set_row(con, 0, WHITE);
+-	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_asserteq(46, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	for (i = 0; i < 20; i++)
+ 		vidconsole_putc_xy(con, VID_TO_POS(i * 8), 0, ' ' + i);
+-	ut_asserteq(273, compress_frame_buffer(uts, dev));
++	ut_asserteq(273, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -210,30 +216,30 @@ static int dm_test_video_text_12x22(struct unit_test_state *uts)
+ 	ut_assertok(video_get_nologo(uts, &dev));
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	ut_assertok(vidconsole_select_font(con, "12x22", 0));
+-	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_asserteq(46, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_putc_xy(con, 0, 0, 'a');
+-	ut_asserteq(89, compress_frame_buffer(uts, dev));
++	ut_asserteq(89, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	vidconsole_putc_xy(con, 0, 0, ' ');
+-	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_asserteq(46, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	for (i = 0; i < 20; i++)
+ 		vidconsole_putc_xy(con, VID_TO_POS(i * 8), 0, ' ' + i);
+-	ut_asserteq(363, compress_frame_buffer(uts, dev));
++	ut_asserteq(363, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	vidconsole_set_row(con, 0, WHITE);
+-	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_asserteq(46, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	for (i = 0; i < 20; i++)
+ 		vidconsole_putc_xy(con, VID_TO_POS(i * 8), 0, ' ' + i);
+-	ut_asserteq(363, compress_frame_buffer(uts, dev));
++	ut_asserteq(363, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -251,7 +257,7 @@ static int dm_test_video_chars(struct unit_test_state *uts)
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	ut_assertok(vidconsole_select_font(con, "8x16", 0));
+ 	vidconsole_put_string(con, test_string);
+-	ut_asserteq(466, compress_frame_buffer(uts, dev));
++	ut_asserteq(466, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -273,23 +279,23 @@ static int dm_test_video_ansi(struct unit_test_state *uts)
+ 	/* reference clear: */
+ 	video_clear(con->parent);
+ 	video_sync(con->parent, false);
+-	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_asserteq(46, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* test clear escape sequence: [2J */
+ 	vidconsole_put_string(con, "A\tB\tC"ANSI_ESC"[2J");
+-	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_asserteq(46, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* test set-cursor: [%d;%df */
+ 	vidconsole_put_string(con, "abc"ANSI_ESC"[2;2fab"ANSI_ESC"[4;4fcd");
+-	ut_asserteq(143, compress_frame_buffer(uts, dev));
++	ut_asserteq(143, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* test colors (30-37 fg color, 40-47 bg color) */
+ 	vidconsole_put_string(con, ANSI_ESC"[30;41mfoo"); /* black on red */
+ 	vidconsole_put_string(con, ANSI_ESC"[33;44mbar"); /* yellow on blue */
+-	ut_asserteq(272, compress_frame_buffer(uts, dev));
++	ut_asserteq(272, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -322,13 +328,13 @@ static int check_vidconsole_output(struct unit_test_state *uts, int rot,
+ 	ut_assertok(video_get_nologo(uts, &dev));
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	ut_assertok(vidconsole_select_font(con, "8x16", 0));
+-	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_asserteq(46, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* Check display wrap */
+ 	for (i = 0; i < 120; i++)
+ 		vidconsole_put_char(con, 'A' + i % 50);
+-	ut_asserteq(wrap_size, compress_frame_buffer(uts, dev));
++	ut_asserteq(wrap_size, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* Check display scrolling */
+@@ -336,13 +342,13 @@ static int check_vidconsole_output(struct unit_test_state *uts, int rot,
+ 		vidconsole_put_char(con, 'A' + i % 50);
+ 		vidconsole_put_char(con, '\n');
+ 	}
+-	ut_asserteq(scroll_size, compress_frame_buffer(uts, dev));
++	ut_asserteq(scroll_size, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	/* If we scroll enough, the screen becomes blank again */
+ 	for (i = 0; i < SCROLL_LINES; i++)
+ 		vidconsole_put_char(con, '\n');
+-	ut_asserteq(46, compress_frame_buffer(uts, dev));
++	ut_asserteq(46, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -417,7 +423,7 @@ static int dm_test_video_bmp(struct unit_test_state *uts)
+ 	ut_assertok(read_file(uts, "tools/logos/denx.bmp", &addr));
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+-	ut_asserteq(1368, compress_frame_buffer(uts, dev));
++	ut_asserteq(1368, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -437,7 +443,7 @@ static int dm_test_video_bmp8(struct unit_test_state *uts)
+ 	ut_assertok(read_file(uts, "tools/logos/denx.bmp", &addr));
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+-	ut_asserteq(1247, compress_frame_buffer(uts, dev));
++	ut_asserteq(1247, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -461,7 +467,7 @@ static int dm_test_video_bmp16(struct unit_test_state *uts)
+ 			   &src_len));
+ 
+ 	ut_assertok(video_bmp_display(dev, dst, 0, 0, false));
+-	ut_asserteq(3700, compress_frame_buffer(uts, dev));
++	ut_asserteq(3700, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -485,7 +491,7 @@ static int dm_test_video_bmp24(struct unit_test_state *uts)
+ 			   &src_len));
+ 
+ 	ut_assertok(video_bmp_display(dev, dst, 0, 0, false));
+-	ut_asserteq(3656, compress_frame_buffer(uts, dev));
++	ut_asserteq(3656, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -509,7 +515,7 @@ static int dm_test_video_bmp24_32(struct unit_test_state *uts)
+ 			   &src_len));
+ 
+ 	ut_assertok(video_bmp_display(dev, dst, 0, 0, false));
+-	ut_asserteq(6827, compress_frame_buffer(uts, dev));
++	ut_asserteq(6827, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -528,7 +534,7 @@ static int dm_test_video_bmp32(struct unit_test_state *uts)
+ 	ut_assertok(read_file(uts, "tools/logos/denx.bmp", &addr));
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+-	ut_asserteq(2024, compress_frame_buffer(uts, dev));
++	ut_asserteq(2024, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -545,7 +551,7 @@ static int dm_test_video_bmp_comp(struct unit_test_state *uts)
+ 	ut_assertok(read_file(uts, "tools/logos/denx-comp.bmp", &addr));
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+-	ut_asserteq(1368, compress_frame_buffer(uts, dev));
++	ut_asserteq(1368, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -565,7 +571,7 @@ static int dm_test_video_comp_bmp32(struct unit_test_state *uts)
+ 	ut_assertok(read_file(uts, "tools/logos/denx.bmp", &addr));
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+-	ut_asserteq(2024, compress_frame_buffer(uts, dev));
++	ut_asserteq(2024, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -585,7 +591,7 @@ static int dm_test_video_comp_bmp8(struct unit_test_state *uts)
+ 	ut_assertok(read_file(uts, "tools/logos/denx.bmp", &addr));
+ 
+ 	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
+-	ut_asserteq(1247, compress_frame_buffer(uts, dev));
++	ut_asserteq(1247, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -601,7 +607,7 @@ static int dm_test_video_truetype(struct unit_test_state *uts)
+ 	ut_assertok(video_get_nologo(uts, &dev));
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_put_string(con, test_string);
+-	ut_asserteq(12174, compress_frame_buffer(uts, dev));
++	ut_asserteq(12174, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -623,7 +629,7 @@ static int dm_test_video_truetype_scroll(struct unit_test_state *uts)
+ 	ut_assertok(video_get_nologo(uts, &dev));
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_put_string(con, test_string);
+-	ut_asserteq(34287, compress_frame_buffer(uts, dev));
++	ut_asserteq(34287, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+@@ -645,7 +651,7 @@ static int dm_test_video_truetype_bs(struct unit_test_state *uts)
+ 	ut_assertok(video_get_nologo(uts, &dev));
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_put_string(con, test_string);
+-	ut_asserteq(29471, compress_frame_buffer(uts, dev));
++	ut_asserteq(29471, compress_frame_buffer(uts, dev, false));
+ 	ut_assertok(check_copy_frame_buffer(uts, dev));
+ 
+ 	return 0;
+
+From patchwork Mon Aug 21 13:51:00 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823645
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=h0nfUUKH;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv6P02TYz1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:51:56 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id F40E487071;
+	Mon, 21 Aug 2023 15:51:33 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="h0nfUUKH";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id EFD6D87069; Mon, 21 Aug 2023 15:51:32 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.2
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com
+ [IPv6:2a00:1450:4864:20::42c])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 0028587074
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:29 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wr1-x42c.google.com with SMTP id
+ ffacd0b85a97d-319779f0347so2987491f8f.1
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625889; x=1693230689;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=Ls20OKhVk8mknnS6GLFBhmTjxLz0/7fKNgK2nzSEs6M=;
+ b=h0nfUUKHqteSaQqflnkXT9zc90H1nKLTOoG4B78CtKhSKUI/thuMDU61AtN+enWvFJ
+ MdvU9OW3jOHeg+LRrxur+6+N4V9k4nGhm2BGwtj56A1DDfCLgk5+Vg38dhi1a24kfBH9
+ d5w6HXOg3wdMizdTsyL0PbugSX7K9ByL9XKpH646NdsnqcikQNdmT2OeiGAmonEmHXAa
+ FII1SypkiZ5TOFcJx9N4X2XqMM3CNxyUsDs6+AV4dTPnjtXaElWj1fQcz8bLn/9q88/X
+ UCvE35N4Y37FFgb+5uTi+00hcLIavYKYrLEpNAclnl9NKFSUAUJyabqQM0+riy1OSMHF
+ 5YBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625889; x=1693230689;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=Ls20OKhVk8mknnS6GLFBhmTjxLz0/7fKNgK2nzSEs6M=;
+ b=Gmm/6GKzL921nU50fcXK4FdwCaAc1DVbDj7ilfjHfBXRaw/k3mmUZ/l5nbwGsTUYUU
+ VX6nd+xFgekVSP5Cns7th6+jnbBBaoaCZUfZYGIhQjEH3JMxxpo17+eNdfCTuo7TjTdl
+ MtWwxmceukhRiNql2W7VOHfb5CXBxorcXXcy3szcEJOlzxIqqUDQcLjNgoe5d2Kpkv9Y
+ 6qkNp6XFyfQCMAMGjF68T5eViaLcvFHFIsvmjXlMU7Ohhhm2We4SK9nBsr6gUgyaxmNs
+ qBLKVZKf+iC9WptVFbXhAML6gJZJo+JQu/tGHHfLf7rm/WT+1VhmDKBgpU1CzA8BRqcG
+ t+og==
+X-Gm-Message-State: AOJu0YxCm+p57uF96KzOW9kggq2KLZimSeriKFH9gpv8fgoy+ddR1X7S
+ 9HsUigoZFUND3/u7rp+XB9qHn3dcZTU=
+X-Google-Smtp-Source: 
+ AGHT+IEwSW6rIF+3ua5ruA0V/p8R0SXlrxBIJRwdiP9dn7nhkL8gMfhxYppZ2c8jWSzauubY8xUVnQ==
+X-Received: by 2002:adf:e482:0:b0:31a:dc27:e10 with SMTP id
+ i2-20020adfe482000000b0031adc270e10mr4721868wrm.65.1692625889315;
+ Mon, 21 Aug 2023 06:51:29 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.27
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:28 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 03/13] video: test: Test partial updates of hardware frame
+ buffer
+Date: Mon, 21 Aug 2023 16:51:00 +0300
+Message-Id: <20230821135111.3558478-4-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+With VIDEO_COPY enabled, only the modified parts of the frame buffer are
+intended to be copied to the hardware. Add a test that checks this, by
+overwriting contents we prepared without telling the video uclass and
+then checking if the overwritten contents have been redrawn on the next
+sync.
+
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+Changes in v5:
+- Add patch "video: test: Test partial updates of hardware frame buffer"
+
+ test/dm/video.c | 54 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 54 insertions(+)
+
+diff --git a/test/dm/video.c b/test/dm/video.c
+index b9ff3da10c18..e4bd27a6b76f 100644
+--- a/test/dm/video.c
++++ b/test/dm/video.c
+@@ -657,3 +657,57 @@ static int dm_test_video_truetype_bs(struct unit_test_state *uts)
+ 	return 0;
+ }
+ DM_TEST(dm_test_video_truetype_bs, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
++
++/* Test partial rendering onto hardware frame buffer */
++static int dm_test_video_copy(struct unit_test_state *uts)
++{
++	struct sandbox_sdl_plat *plat;
++	struct video_uc_plat *uc_plat;
++	struct udevice *dev, *con;
++	struct video_priv *priv;
++	const char *test_string = "\n\tCriticism may not be agreeable, but it is necessary.\t";
++	ulong addr;
++
++	if (!IS_ENABLED(CONFIG_VIDEO_COPY))
++		return -EAGAIN;
++
++	ut_assertok(uclass_find_first_device(UCLASS_VIDEO, &dev));
++	ut_assertnonnull(dev);
++	uc_plat = dev_get_uclass_plat(dev);
++	uc_plat->hide_logo = true;
++	plat = dev_get_plat(dev);
++	plat->font_size = 32;
++	ut_assert(!device_active(dev));
++	ut_assertok(uclass_first_device_err(UCLASS_VIDEO, &dev));
++	ut_assertnonnull(dev);
++	priv = dev_get_uclass_priv(dev);
++
++	ut_assertok(read_file(uts, "tools/logos/denx.bmp", &addr));
++	ut_assertok(video_bmp_display(dev, addr, 0, 0, false));
++
++	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
++	vidconsole_put_string(con, "\n\n\n\n\n");
++	vidconsole_put_string(con, test_string);
++	vidconsole_put_string(con, test_string);
++
++	ut_asserteq(6678, compress_frame_buffer(uts, dev, false));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
++
++	/*
++	 * Secretly clear the hardware frame buffer, but in a different
++	 * color (black) to see which parts will be overwritten.
++	 */
++	memset(priv->copy_fb, 0, priv->fb_size);
++
++	/*
++	 * We should have the full content on the main buffer, but only
++	 * the new content should have been copied to the copy buffer.
++	 */
++	vidconsole_put_string(con, test_string);
++	vidconsole_put_string(con, test_string);
++	ut_asserteq(7589, compress_frame_buffer(uts, dev, false));
++	ut_asserteq(5278, compress_frame_buffer(uts, dev, true));
++
++	return 0;
++}
++DM_TEST(dm_test_video_copy, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
+
+From patchwork Mon Aug 21 13:51:01 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823647
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=bU3qjQR0;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv6c2SWvz1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:52:08 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 4441F87070;
+	Mon, 21 Aug 2023 15:51:36 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="bU3qjQR0";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 3848287075; Mon, 21 Aug 2023 15:51:35 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com
+ [IPv6:2a00:1450:4864:20::42c])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 841D2869B6
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:32 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wr1-x42c.google.com with SMTP id
+ ffacd0b85a97d-31aec0a1a8bso1211537f8f.0
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625892; x=1693230692;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=edVipA0fXjfO2+yIw/Pp5VvEle3RKuzWiUXEb/KCl5I=;
+ b=bU3qjQR0xHT3knwMAc4fOHXpeWOGcUonKhClh1IfqxsqOHWeRbIi1W1OtDuPIyv8dX
+ CyIHX30R+SQr8o+T5xSFf4E4kwRpsqOzh2mXOD3dzuYzJPkreOM5clQMgmyn2JGs+nON
+ KDztnOSqesV2IvPZqdr61bxJTw/SjXqRXGc7/YkT7OWwlaug26E+DbzP7Xt+plHDVz/9
+ 6OB5zFxUapwX0mqxb6jbNAz17TvjQ5qIviNkCRZUZ2vseEB78BwHajxkNCG4jVOaQDON
+ aJWc+UOFyWJ3jLmQ+cOJgR+J0SoF3VAVYhbYaYviNV2DiaBPLPL9axirby/hW4Kx2waB
+ YKAg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625892; x=1693230692;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=edVipA0fXjfO2+yIw/Pp5VvEle3RKuzWiUXEb/KCl5I=;
+ b=STc6gYqDRe7JtT56BIezfKTd0PQe87I83hDC5mL+8D0AqUp1RiJPnPt9MWIAVfO63j
+ plu8RveodelqOd26zWzlFDepTA+jfvcAgOePHLLLx3YiAidxIWD6d0SVlG+zagmUlHzm
+ HGscQ+3iGYhTHAGxc10UHaQcMlCmyeWecwIjxXBpM85g6puunYrN14aYfsp6E0ODCLMg
+ 9HAD2Zx5b++HK3yE7Ld6hientRzVXxwURTL5ehSSO2AX95YMagfKaP767VvupWtB18du
+ 5Lfk0k60qTxe3Xlamnm8bdoRofuIyLLaSZ+0M7lAsEPPsS4QRGn+m7MwI8YTlRIU8wFQ
+ cYSQ==
+X-Gm-Message-State: AOJu0YwPPIi0QLYKGPNa9T+XPhwof7rD3VBA3kfub7MM4xEG6u6r8puq
+ cSLl/n+w1P2LSAPH1AWswz3SS227DdQ=
+X-Google-Smtp-Source: 
+ AGHT+IFAUyNsvOmdhjdIygYhsv/SH6hvXItfwiWsY14vr3nwQ9J7A0Q0Y71M8WvaFJdxn7mmOeZlrg==
+X-Received: by 2002:a5d:44c8:0:b0:317:e9d7:9387 with SMTP id
+ z8-20020a5d44c8000000b00317e9d79387mr7196865wrr.25.1692625891911;
+ Mon, 21 Aug 2023 06:51:31 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.30
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:31 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 04/13] dm: video: Add damage tracking API
+Date: Mon, 21 Aug 2023 16:51:01 +0300
+Message-Id: <20230821135111.3558478-5-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Alexander Graf <agraf@csgraf.de>
+
+We are going to introduce image damage tracking to fasten up screen
+refresh on large displays. This patch adds damage tracking for up to
+one rectangle of the screen which is typically enough to hold blt or
+text print updates. Callers into this API and a reduced dcache flush
+code path will follow in later patches.
+
+Signed-off-by: Alexander Graf <agraf@csgraf.de>
+Reported-by: Da Xue <da@libre.computer>
+[Alper: Use xstart/yend, document new fields, return void from
+        video_damage(), declare priv, drop headers, use IS_ENABLED()]
+Co-developed-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+Changes in v5:
+- Use xstart, ystart, xend, yend as names for damage region
+- Document damage struct and fields in struct video_priv comment
+- Return void from video_damage()
+- Fix undeclared priv error in video_sync()
+- Drop unused headers from video-uclass.c
+- Use IS_ENABLED() instead of CONFIG_IS_ENABLED()
+
+Changes in v4:
+- Move damage clear to patch "dm: video: Add damage tracking API"
+- Simplify first damage logic
+- Remove VIDEO_DAMAGE default for ARM
+
+Changes in v3:
+- Adapt to always assume DM is used
+
+Changes in v2:
+- Remove ifdefs
+
+ drivers/video/Kconfig        | 13 ++++++++++++
+ drivers/video/video-uclass.c | 41 +++++++++++++++++++++++++++++++++---
+ include/video.h              | 32 ++++++++++++++++++++++++++--
+ 3 files changed, 81 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index fe43fbd7004a..97f494a1340b 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -92,6 +92,19 @@ config VIDEO_COPY
+ 	  To use this, your video driver must set @copy_base in
+ 	  struct video_uc_plat.
+ 
++config VIDEO_DAMAGE
++	bool "Enable damage tracking of frame buffer regions"
++	help
++	  On some machines (most ARM), the display frame buffer resides in
++	  RAM. To make the display controller pick up screen updates, we
++	  have to flush frame buffer contents from CPU caches into RAM which
++	  can be a slow operation.
++
++	  This feature adds damage tracking to collect information about regions
++	  that received updates. When we want to sync, we then only flush
++	  regions of the frame buffer that were modified before, speeding up
++	  screen refreshes significantly.
++
+ config BACKLIGHT_PWM
+ 	bool "Generic PWM based Backlight Driver"
+ 	depends on BACKLIGHT && DM_PWM
+diff --git a/drivers/video/video-uclass.c b/drivers/video/video-uclass.c
+index 8f268fc4063f..447689581668 100644
+--- a/drivers/video/video-uclass.c
++++ b/drivers/video/video-uclass.c
+@@ -351,9 +351,39 @@ void video_set_default_colors(struct udevice *dev, bool invert)
+ 	priv->colour_bg = video_index_to_colour(priv, back);
+ }
+ 
++/* Notify about changes in the frame buffer */
++void video_damage(struct udevice *vid, int x, int y, int width, int height)
++{
++	struct video_priv *priv = dev_get_uclass_priv(vid);
++	int xend = x + width;
++	int yend = y + height;
++
++	if (!IS_ENABLED(CONFIG_VIDEO_DAMAGE))
++		return;
++
++	if (x > priv->xsize)
++		return;
++
++	if (y > priv->ysize)
++		return;
++
++	if (xend > priv->xsize)
++		xend = priv->xsize;
++
++	if (yend > priv->ysize)
++		yend = priv->ysize;
++
++	/* Span a rectangle across all old and new damage */
++	priv->damage.xstart = min(x, priv->damage.xstart);
++	priv->damage.ystart = min(y, priv->damage.ystart);
++	priv->damage.xend = max(xend, priv->damage.xend);
++	priv->damage.yend = max(yend, priv->damage.yend);
++}
++
+ /* Flush video activity to the caches */
+ int video_sync(struct udevice *vid, bool force)
+ {
++	struct video_priv *priv = dev_get_uclass_priv(vid);
+ 	struct video_ops *ops = video_get_ops(vid);
+ 	int ret;
+ 
+@@ -369,15 +399,12 @@ int video_sync(struct udevice *vid, bool force)
+ 	 * out whether it exists? For now, ARM is safe.
+ 	 */
+ #if defined(CONFIG_ARM) && !CONFIG_IS_ENABLED(SYS_DCACHE_OFF)
+-	struct video_priv *priv = dev_get_uclass_priv(vid);
+-
+ 	if (priv->flush_dcache) {
+ 		flush_dcache_range((ulong)priv->fb,
+ 				   ALIGN((ulong)priv->fb + priv->fb_size,
+ 					 CONFIG_SYS_CACHELINE_SIZE));
+ 	}
+ #elif defined(CONFIG_VIDEO_SANDBOX_SDL)
+-	struct video_priv *priv = dev_get_uclass_priv(vid);
+ 	static ulong last_sync;
+ 
+ 	if (force || get_timer(last_sync) > 100) {
+@@ -385,6 +412,14 @@ int video_sync(struct udevice *vid, bool force)
+ 		last_sync = get_timer(0);
+ 	}
+ #endif
++
++	if (IS_ENABLED(CONFIG_VIDEO_DAMAGE)) {
++		priv->damage.xstart = priv->xsize;
++		priv->damage.ystart = priv->ysize;
++		priv->damage.xend = 0;
++		priv->damage.yend = 0;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/include/video.h b/include/video.h
+index 66d109ca5da6..a522f33949e5 100644
+--- a/include/video.h
++++ b/include/video.h
+@@ -85,6 +85,11 @@ enum video_format {
+  * @fb_size:	Frame buffer size
+  * @copy_fb:	Copy of the frame buffer to keep up to date; see struct
+  *		video_uc_plat
++ * @damage:	A bounding box of framebuffer regions updated since last sync
++ * @damage.xstart:	X start position in pixels from the left
++ * @damage.ystart:	Y start position in pixels from the top
++ * @damage.xend:	X end position in pixels from the left
++ * @damage.xend:	Y end position in pixels from the top
+  * @line_length:	Length of each frame buffer line, in bytes. This can be
+  *		set by the driver, but if not, the uclass will set it after
+  *		probing
+@@ -112,6 +117,12 @@ struct video_priv {
+ 	void *fb;
+ 	int fb_size;
+ 	void *copy_fb;
++	struct {
++		int xstart;
++		int ystart;
++		int xend;
++		int yend;
++	} damage;
+ 	int line_length;
+ 	u32 colour_fg;
+ 	u32 colour_bg;
+@@ -254,8 +265,9 @@ int video_fill_part(struct udevice *dev, int xstart, int ystart, int xend,
+  * @return: 0 on success, error code otherwise
+  *
+  * Some frame buffers are cached or have a secondary frame buffer. This
+- * function syncs these up so that the current contents of the U-Boot frame
+- * buffer are displayed to the user.
++ * function syncs the damaged parts of them up so that the current contents
++ * of the U-Boot frame buffer are displayed to the user. It clears the damage
++ * buffer.
+  */
+ int video_sync(struct udevice *vid, bool force);
+ 
+@@ -375,6 +387,22 @@ static inline int video_sync_copy_all(struct udevice *dev)
+ 
+ #endif
+ 
++/**
++ * video_damage() - Notify the video subsystem about screen updates.
++ *
++ * @vid:	Device to sync
++ * @x:	        Upper left X coordinate of the damaged rectangle
++ * @y:	        Upper left Y coordinate of the damaged rectangle
++ * @width:	Width of the damaged rectangle
++ * @height:	Height of the damaged rectangle
++ *
++ * Some frame buffers are cached or have a secondary frame buffer. This
++ * function notifies the video subsystem about rectangles that were updated
++ * within the frame buffer. They may only get written to the screen on the
++ * next call to video_sync().
++ */
++void video_damage(struct udevice *vid, int x, int y, int width, int height);
++
+ /**
+  * video_is_active() - Test if one video device it active
+  *
+
+From patchwork Mon Aug 21 13:51:02 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823648
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=BdIntNrw;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1) server-digest SHA384)
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv6p6cj3z1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:52:18 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 8A59F87086;
+	Mon, 21 Aug 2023 15:51:40 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="BdIntNrw";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 3C3FD867A0; Mon, 21 Aug 2023 15:51:39 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.2
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com
+ [IPv6:2a00:1450:4864:20::42c])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 546E686F0A
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:35 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wr1-x42c.google.com with SMTP id
+ ffacd0b85a97d-31c3df710bdso1066363f8f.1
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625895; x=1693230695;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=rfyiNp4RS7b8BQCxsUs1afKXNK4WMu1bUdXxDQXJn1U=;
+ b=BdIntNrw+JbVTri7AodJPuA4KoTwuid2ByavDMP+gEZwSfMkjrlWlFROWNdM4E2KeC
+ btsSXcPQO3jMnyoxVbS5g4DL2PkXPHNZO/Lw5Db4La4RGjoB4ks8w4G1nQ5kVo8NIXlQ
+ 7da1BVmm9tlV2cmt2LVuLp3WDWvgE5vJ9kVj8BH8fjD+gKc5wVOKtRIPJnqL8Eqj55A5
+ y8xjVcW5ldxVps2jj0kE7Mq8LG2R6Bd37Zsw+Dq3Cj/1khMgLkYog8/Nf+k2uYXPQpjA
+ TS03XR6eJ7GQcRUf0iWft80hVZMVk6KF2AWuF04HcJ/goyNj4MGGFun0tanDYNImJzv0
+ A/8A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625895; x=1693230695;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=rfyiNp4RS7b8BQCxsUs1afKXNK4WMu1bUdXxDQXJn1U=;
+ b=N71LYmMnxX45xKNJxNk72goiD3Cf5e0f3znUaZ/B4Ue95/rqpwn6vLQvhNkxjyJjKz
+ QxOUGBKeP4pdGPJD2eVZgEA1+8cyBu3q0BssvtHzLuXCZtgGmVE+jhS1ZplzCePV5HDq
+ cpjabmm8tLydQpgXN42bXGeg5S7C2hbuWb9P1yFz0T2VRKDhKfnBacDMMyCM77q885Xq
+ scmyG9QS6JjzzhlNCx2LAvunQyb5Ub3Jeac6w62kdW5d82X5hQ7R5IuMhO6HB9cXSoIL
+ q4cciYJYPkkgJo7cJBCGs9hpoG7mAiYugMX3xvTX0AozIxV+I0RqRnIaeK4YPRctAqDa
+ B+ZQ==
+X-Gm-Message-State: AOJu0Yzo17fP4SdOljTzWNaDUk2p0KMalzHe92zD3l/uyJxeFYnVtZ6Z
+ JKO6vwp7AEEfITHacMlSfDnu20sRQPA=
+X-Google-Smtp-Source: 
+ AGHT+IEaweUWG6MdegfaF+T8dg4D4mXuTL2UTLikuqRhtfAyLWNc6xApEfO0HHPUExbseBScRw20SA==
+X-Received: by 2002:a5d:44d1:0:b0:313:f94f:3b15 with SMTP id
+ z17-20020a5d44d1000000b00313f94f3b15mr5140696wrr.2.1692625894567;
+ Mon, 21 Aug 2023 06:51:34 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.32
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:34 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 05/13] dm: video: Add damage notification on display fills
+Date: Mon, 21 Aug 2023 16:51:02 +0300
+Message-Id: <20230821135111.3558478-6-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Alexander Graf <agraf@csgraf.de>
+
+Let's report the video damage when we fill parts of the screen. This
+way we can later lazily flush only relevant regions to hardware.
+
+Signed-off-by: Alexander Graf <agraf@csgraf.de>
+Reported-by: Da Xue <da@libre.computer>
+[Alper: Call video_damage() in video_fill_part(), edit commit message]
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+Does video_fill_part() need a video_sync(dev, false) here?
+
+Changes in v5:
+- Call video_damage() also in video_fill_part()
+
+ drivers/video/video-uclass.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/video/video-uclass.c b/drivers/video/video-uclass.c
+index 447689581668..ebf409d839f0 100644
+--- a/drivers/video/video-uclass.c
++++ b/drivers/video/video-uclass.c
+@@ -203,6 +203,8 @@ int video_fill_part(struct udevice *dev, int xstart, int ystart, int xend,
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev, xstart, ystart, xend - xstart, yend - ystart);
++
+ 	return 0;
+ }
+ 
+@@ -249,6 +251,8 @@ int video_fill(struct udevice *dev, u32 colour)
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev, 0, 0, priv->xsize, priv->ysize);
++
+ 	return video_sync(dev, false);
+ }
+ 
+
+From patchwork Mon Aug 21 13:51:03 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823649
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=oaK1+upy;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv712FN9z1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:52:29 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id D08B3867A0;
+	Mon, 21 Aug 2023 15:51:42 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="oaK1+upy";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 8D15587084; Mon, 21 Aug 2023 15:51:40 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com
+ [IPv6:2a00:1450:4864:20::436])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id DA4E1869B6
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:37 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wr1-x436.google.com with SMTP id
+ ffacd0b85a97d-317f1c480eeso3049475f8f.2
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625897; x=1693230697;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=7yrfRyMChh1ygDQtR1jl9BYhd6F+V0coaR3saA65Ao8=;
+ b=oaK1+upyGYfwOr4/nZR8RIRT+Yn2PZ+2dy2+GMSjffIkOUvAA4SwUrsuBUHVmQ+cIg
+ Q0F+D60Mp5/MzkFm9rwAnrQpO2uJb9esI/U8crcERtM+p1p5iKU9VNHrwRjlzB4VfG3E
+ 1rFRNOOhGpyPBS6RY+cJD557cLeGMoVUsQbv3xfnShrQg142CAOgzdQ4AtJ3FYRDngOc
+ QiczfO53zpeOnZjhBAa5aw7TDgIqHuR1bYCYIRraWJdIl9Cxa6ZDN1IozoPg6hutV+SE
+ 77oOM9VfIYyC8B3q6wdaduzcH0Qgeq3IEzfE54DLVtS/yT5z2vJiPtnfnV2pXzjU01Iq
+ l7Fg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625897; x=1693230697;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=7yrfRyMChh1ygDQtR1jl9BYhd6F+V0coaR3saA65Ao8=;
+ b=NgyE/5/ABpribqDY5ykRBi/ftUfa+3meGxemZJPAl2gCi2+PfUEbrdHMbSPz/8nbY9
+ qS/5UPv+41yRmDLmqeaNK/RXif7qV+CdVrg4K7xD0x/HbezXsIvKSc6rs5IqPqQvp0lx
+ JDuescRAcyrjtBjBFIAsrOx0+GynSijvWQArLcJRL330eiNnBn0HYRiVFqfEy3jpv5Hz
+ 13zk9q/GW8Hc7GRtA+FAkeUqJ3t8VaRzHLfoUJO3zFS8bWXgnWUAbCx0OOB9MahUqvyv
+ s/jpw79ZhFlhzO/Nwa63SlfQi+T3dAiYQ3kpBDgz7YFjSxvYaFYJDW3ihVDv8VTIiLdl
+ WB8Q==
+X-Gm-Message-State: AOJu0YwqmT7iLKiUZblbrZz+UE4GebW514Sdllsg7NS//fk35AzXbHd7
+ 7wXdC1ugEQP9Gez3jIRiAyQs4cDTcVc=
+X-Google-Smtp-Source: 
+ AGHT+IHO/arCmWeM8GYL18CXATu4Sh++TdyEswajL5QnvTaImLdSHvMUo+xc/gBkyHdBnNYS/qgvaQ==
+X-Received: by 2002:adf:cd0b:0:b0:31c:3013:9fa5 with SMTP id
+ w11-20020adfcd0b000000b0031c30139fa5mr3560706wrm.59.1692625897248;
+ Mon, 21 Aug 2023 06:51:37 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.35
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:36 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 06/13] vidconsole: Add damage notifications to all
+ vidconsole drivers
+Date: Mon, 21 Aug 2023 16:51:03 +0300
+Message-Id: <20230821135111.3558478-7-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Alexander Graf <agraf@csgraf.de>
+
+Now that we have a damage tracking API, let's populate damage done by
+vidconsole drivers. We try to declare as little memory as damaged as
+possible.
+
+Signed-off-by: Alexander Graf <agraf@csgraf.de>
+Reported-by: Da Xue <da@libre.computer>
+[Alper: Rebase for met->baseline, fontdata->height/width, make rotated
+        console_putc_xy() damages pass tests, edit patch message]
+Co-developed-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+Changes in v5:
+- Use met->baseline instead of priv->baseline
+- Use fontdata->height/width instead of VIDEO_FONT_HEIGHT/WIDTH
+- Update console_rotate.c video_damage() calls to pass video tests
+- Remove mention about not having minimal damage for console_rotate.c
+
+Changes in v2:
+- Fix ranges in truetype target
+- Limit rotate to necessary damage
+
+ drivers/video/console_normal.c   | 18 +++++++++++
+ drivers/video/console_rotate.c   | 54 ++++++++++++++++++++++++++++++++
+ drivers/video/console_truetype.c | 21 +++++++++++++
+ drivers/video/video-uclass.c     |  1 +
+ 4 files changed, 94 insertions(+)
+
+diff --git a/drivers/video/console_normal.c b/drivers/video/console_normal.c
+index 413c7abee9e1..a19ce6a2bc11 100644
+--- a/drivers/video/console_normal.c
++++ b/drivers/video/console_normal.c
+@@ -39,6 +39,12 @@ static int console_set_row(struct udevice *dev, uint row, int clr)
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev->parent,
++		     0,
++		     fontdata->height * row,
++		     vid_priv->xsize,
++		     fontdata->height);
++
+ 	return 0;
+ }
+ 
+@@ -60,6 +66,12 @@ static int console_move_rows(struct udevice *dev, uint rowdst,
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev->parent,
++		     0,
++		     fontdata->height * rowdst,
++		     vid_priv->xsize,
++		     fontdata->height * count);
++
+ 	return 0;
+ }
+ 
+@@ -90,6 +102,12 @@ static int console_putc_xy(struct udevice *dev, uint x_frac, uint y, char ch)
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev->parent,
++		     x,
++		     y,
++		     fontdata->width,
++		     fontdata->height);
++
+ 	ret = vidconsole_sync_copy(dev, start, line);
+ 	if (ret)
+ 		return ret;
+diff --git a/drivers/video/console_rotate.c b/drivers/video/console_rotate.c
+index 65358a1c6e74..6c3e7c1bb8dc 100644
+--- a/drivers/video/console_rotate.c
++++ b/drivers/video/console_rotate.c
+@@ -36,6 +36,12 @@ static int console_set_row_1(struct udevice *dev, uint row, int clr)
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev->parent,
++		     vid_priv->xsize - ((row + 1) * fontdata->height),
++		     0,
++		     fontdata->height,
++		     vid_priv->ysize);
++
+ 	return 0;
+ }
+ 
+@@ -64,6 +70,12 @@ static int console_move_rows_1(struct udevice *dev, uint rowdst, uint rowsrc,
+ 		dst += vid_priv->line_length;
+ 	}
+ 
++	video_damage(dev->parent,
++		     vid_priv->xsize - ((rowdst + count) * fontdata->height),
++		     0,
++		     count * fontdata->height,
++		     vid_priv->ysize);
++
+ 	return 0;
+ }
+ 
+@@ -96,6 +108,12 @@ static int console_putc_xy_1(struct udevice *dev, uint x_frac, uint y, char ch)
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev->parent,
++		     vid_priv->xsize - y - fontdata->height,
++		     linenum - 1,
++		     fontdata->height,
++		     fontdata->width);
++
+ 	return VID_TO_POS(fontdata->width);
+ }
+ 
+@@ -121,6 +139,12 @@ static int console_set_row_2(struct udevice *dev, uint row, int clr)
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev->parent,
++		     0,
++		     vid_priv->ysize - (row + 1) * fontdata->height,
++		     vid_priv->xsize,
++		     fontdata->height);
++
+ 	return 0;
+ }
+ 
+@@ -142,6 +166,12 @@ static int console_move_rows_2(struct udevice *dev, uint rowdst, uint rowsrc,
+ 	vidconsole_memmove(dev, dst, src,
+ 			   fontdata->height * vid_priv->line_length * count);
+ 
++	video_damage(dev->parent,
++		     0,
++		     vid_priv->ysize - (rowdst + count) * fontdata->height,
++		     vid_priv->xsize,
++		     count * fontdata->height);
++
+ 	return 0;
+ }
+ 
+@@ -174,6 +204,12 @@ static int console_putc_xy_2(struct udevice *dev, uint x_frac, uint y, char ch)
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev->parent,
++		     x - fontdata->width + 1,
++		     linenum - fontdata->height + 1,
++		     fontdata->width,
++		     fontdata->height);
++
+ 	return VID_TO_POS(fontdata->width);
+ }
+ 
+@@ -198,6 +234,12 @@ static int console_set_row_3(struct udevice *dev, uint row, int clr)
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev->parent,
++		     row * fontdata->height,
++		     0,
++		     fontdata->height,
++		     vid_priv->ysize);
++
+ 	return 0;
+ }
+ 
+@@ -224,6 +266,12 @@ static int console_move_rows_3(struct udevice *dev, uint rowdst, uint rowsrc,
+ 		dst += vid_priv->line_length;
+ 	}
+ 
++	video_damage(dev->parent,
++		     rowdst * fontdata->height,
++		     0,
++		     count * fontdata->height,
++		     vid_priv->ysize);
++
+ 	return 0;
+ }
+ 
+@@ -255,6 +303,12 @@ static int console_putc_xy_3(struct udevice *dev, uint x_frac, uint y, char ch)
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev->parent,
++		     y,
++		     linenum - fontdata->width + 1,
++		     fontdata->height,
++		     fontdata->width);
++
+ 	return VID_TO_POS(fontdata->width);
+ }
+ 
+diff --git a/drivers/video/console_truetype.c b/drivers/video/console_truetype.c
+index 0f9bb49e44f7..0adbf9cc3d67 100644
+--- a/drivers/video/console_truetype.c
++++ b/drivers/video/console_truetype.c
+@@ -178,6 +178,7 @@ struct console_tt_priv {
+ static int console_truetype_set_row(struct udevice *dev, uint row, int clr)
+ {
+ 	struct video_priv *vid_priv = dev_get_uclass_priv(dev->parent);
++	struct vidconsole_priv *vc_priv = dev_get_uclass_priv(dev);
+ 	struct console_tt_priv *priv = dev_get_priv(dev);
+ 	struct console_tt_metrics *met = priv->cur_met;
+ 	void *end, *line;
+@@ -221,6 +222,12 @@ static int console_truetype_set_row(struct udevice *dev, uint row, int clr)
+ 	if (ret)
+ 		return ret;
+ 
++	video_damage(dev->parent,
++		     0,
++		     vc_priv->y_charsize * row,
++		     vid_priv->xsize,
++		     vc_priv->y_charsize);
++
+ 	return 0;
+ }
+ 
+@@ -228,6 +235,7 @@ static int console_truetype_move_rows(struct udevice *dev, uint rowdst,
+ 				     uint rowsrc, uint count)
+ {
+ 	struct video_priv *vid_priv = dev_get_uclass_priv(dev->parent);
++	struct vidconsole_priv *vc_priv = dev_get_uclass_priv(dev);
+ 	struct console_tt_priv *priv = dev_get_priv(dev);
+ 	struct console_tt_metrics *met = priv->cur_met;
+ 	void *dst;
+@@ -246,6 +254,12 @@ static int console_truetype_move_rows(struct udevice *dev, uint rowdst,
+ 	for (i = 0; i < priv->pos_ptr; i++)
+ 		priv->pos[i].ypos -= diff;
+ 
++	video_damage(dev->parent,
++		     0,
++		     vc_priv->y_charsize * rowdst,
++		     vid_priv->xsize,
++		     vc_priv->y_charsize * count);
++
+ 	return 0;
+ }
+ 
+@@ -403,6 +417,13 @@ static int console_truetype_putc_xy(struct udevice *dev, uint x, uint y,
+ 
+ 		line += vid_priv->line_length;
+ 	}
++
++	video_damage(dev->parent,
++		     VID_TO_PIXEL(x) + xoff,
++		     y + met->baseline + yoff,
++		     width,
++		     height);
++
+ 	ret = vidconsole_sync_copy(dev, start, line);
+ 	if (ret)
+ 		return ret;
+diff --git a/drivers/video/video-uclass.c b/drivers/video/video-uclass.c
+index ebf409d839f0..8bfcbc88dda7 100644
+--- a/drivers/video/video-uclass.c
++++ b/drivers/video/video-uclass.c
+@@ -199,6 +199,7 @@ int video_fill_part(struct udevice *dev, int xstart, int ystart, int xend,
+ 		}
+ 		line += priv->line_length;
+ 	}
++
+ 	ret = video_sync_copy(dev, start, line);
+ 	if (ret)
+ 		return ret;
+
+From patchwork Mon Aug 21 13:51:04 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823650
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=i+1wSJUC;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv7B5SVxz1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:52:38 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 2380887084;
+	Mon, 21 Aug 2023 15:51:45 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="i+1wSJUC";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 2081087081; Mon, 21 Aug 2023 15:51:43 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.2
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com
+ [IPv6:2a00:1450:4864:20::329])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 45F8E8707A
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:40 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wm1-x329.google.com with SMTP id
+ 5b1f17b1804b1-3fee600dce6so18065515e9.1
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625900; x=1693230700;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=du9K8HAMfjDBv9t9zq9p8Zs+vCZHJ6g2zmB7iSzSF7o=;
+ b=i+1wSJUCYpv3D2Y4WhFT+a+eXACMjCfu9K5FQkWQdC2smyIukzPLOT9TKll1BIlZ+S
+ 0BSrF+Vp8/DGT40HSh+wXWV4jYRbGaai6uC9HETzas7pJ6Qhy+ffz2UKdEYLi1VLHsaq
+ X75Z5dWmXphu9f83rAKezE9CYHm+PJtfCCmN6nzYmKby9xzdvEmPjC4JmCjqvh+sqORE
+ Bzxq55zbOUyTxIzqT01tuFNOw/v8W0H5dQ6fFOCzvxrMmYV1xWY68YL/0QqfqG2DG5q1
+ XPDS0Sgg6L+yzBD2e/I0iNDZaFfXRDq4jvWBkELBWMrWm1880C9/qHFlPwFRRUlHYf+M
+ 4DSQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625900; x=1693230700;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=du9K8HAMfjDBv9t9zq9p8Zs+vCZHJ6g2zmB7iSzSF7o=;
+ b=ejVU1hfEMyFZ7BfMSqaYec4EUOoA0M467Rm/YLD9WqMi6MKcePqHndqYIVtBdIb8pl
+ jE/EUHhBvvRp1Bn9zpDfUbCUk27iKZaqWwqAa4ZLknDsCStzGovzG2+wKem8yoP2H1jp
+ e5tUVYZa2/MESz/zDnwWZV528p3+eHhCUUWBwTCt3plzb+SWqR1j0T40nBrUB+tDj1b0
+ VYDTZvDCxDhQRGlLmMYX8QtWf/waAzPl5ePXvPhus06aR5+7O2V28M8yF2xRcceFSIQR
+ 4T2k/MBwCdM1+mpz6TnKB+zjN6Kj0TmPzEo9o6Pcc/lXWY0kRniuHFu0fzE84gOcGlOi
+ Xfyw==
+X-Gm-Message-State: AOJu0YxMuk5t4Hh2FasrdRfRr0tLxX8vAgGS5cfNm5tZpbvKz9V6ip/a
+ g8C3FsqqNAKybynks3ECaaBXn+kLAr4=
+X-Google-Smtp-Source: 
+ AGHT+IE0aHC9IeAZ9om6v+CX5lhGhaikzyvs7K+JjasiPPxFotFPaEOG+0SHfy/L4wW7iRlvWFh0mw==
+X-Received: by 2002:a5d:568f:0:b0:317:e5ec:8767 with SMTP id
+ f15-20020a5d568f000000b00317e5ec8767mr4615501wrv.21.1692625899711;
+ Mon, 21 Aug 2023 06:51:39 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.37
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:39 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 07/13] video: test: Test video damage tracking via
+ vidconsole
+Date: Mon, 21 Aug 2023 16:51:04 +0300
+Message-Id: <20230821135111.3558478-8-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+With VIDEO_DAMAGE, the video uclass tracks updated regions of the frame
+buffer in order to avoid unnecessary work during a video sync. Enable
+the config in sandbox and add a test for it, by printing strings at a
+few locations and checking the tracked region.
+
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+This is hard to test because most things issue video syncs that process
+and reset the damaged region.
+
+Changes in v5:
+- Add patch "video: test: Test video damage tracking via vidconsole"
+
+ configs/sandbox_defconfig |  1 +
+ test/dm/video.c           | 56 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 57 insertions(+)
+
+diff --git a/configs/sandbox_defconfig b/configs/sandbox_defconfig
+index 259f31f26cee..51b820f13121 100644
+--- a/configs/sandbox_defconfig
++++ b/configs/sandbox_defconfig
+@@ -307,6 +307,7 @@ CONFIG_USB_ETH_CDC=y
+ CONFIG_VIDEO=y
+ CONFIG_VIDEO_FONT_SUN12X22=y
+ CONFIG_VIDEO_COPY=y
++CONFIG_VIDEO_DAMAGE=y
+ CONFIG_CONSOLE_ROTATION=y
+ CONFIG_CONSOLE_TRUETYPE=y
+ CONFIG_CONSOLE_TRUETYPE_CANTORAONE=y
+diff --git a/test/dm/video.c b/test/dm/video.c
+index e4bd27a6b76f..8c7d9800a42e 100644
+--- a/test/dm/video.c
++++ b/test/dm/video.c
+@@ -711,3 +711,59 @@ static int dm_test_video_copy(struct unit_test_state *uts)
+ 	return 0;
+ }
+ DM_TEST(dm_test_video_copy, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
++
++/* Test video damage tracking */
++static int dm_test_video_damage(struct unit_test_state *uts)
++{
++	struct sandbox_sdl_plat *plat;
++	struct udevice *dev, *con;
++	struct video_priv *priv;
++	const char *test_string_1 = "Criticism may not be agreeable, ";
++	const char *test_string_2 = "but it is necessary.";
++	const char *test_string_3 = "It fulfils the same function as pain in the human body.";
++
++	if (!IS_ENABLED(CONFIG_VIDEO_DAMAGE))
++		return -EAGAIN;
++
++	ut_assertok(uclass_find_device(UCLASS_VIDEO, 0, &dev));
++	ut_assert(!device_active(dev));
++	plat = dev_get_plat(dev);
++	plat->font_size = 32;
++
++	ut_assertok(video_get_nologo(uts, &dev));
++	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
++	priv = dev_get_uclass_priv(dev);
++
++	vidconsole_position_cursor(con, 14, 10);
++	vidconsole_put_string(con, test_string_2);
++	ut_asserteq(449, priv->damage.xstart);
++	ut_asserteq(325, priv->damage.ystart);
++	ut_asserteq(661, priv->damage.xend);
++	ut_asserteq(350, priv->damage.yend);
++
++	vidconsole_position_cursor(con, 7, 5);
++	vidconsole_put_string(con, test_string_1);
++	ut_asserteq(225, priv->damage.xstart);
++	ut_asserteq(164, priv->damage.ystart);
++	ut_asserteq(661, priv->damage.xend);
++	ut_asserteq(350, priv->damage.yend);
++
++	vidconsole_position_cursor(con, 21, 15);
++	vidconsole_put_string(con, test_string_3);
++	ut_asserteq(225, priv->damage.xstart);
++	ut_asserteq(164, priv->damage.ystart);
++	ut_asserteq(1280, priv->damage.xend);
++	ut_asserteq(510, priv->damage.yend);
++
++	video_sync(dev, false);
++	ut_asserteq(priv->xsize, priv->damage.xstart);
++	ut_asserteq(priv->ysize, priv->damage.ystart);
++	ut_asserteq(0, priv->damage.xend);
++	ut_asserteq(0, priv->damage.yend);
++
++	ut_asserteq(7339, compress_frame_buffer(uts, dev, false));
++	ut_assertok(check_copy_frame_buffer(uts, dev));
++
++	return 0;
++}
++DM_TEST(dm_test_video_damage, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
+
+From patchwork Mon Aug 21 13:51:05 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823651
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=mvjKik+t;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv7M6kVWz1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:52:47 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 6CAC987085;
+	Mon, 21 Aug 2023 15:51:46 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="mvjKik+t";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 6192687085; Mon, 21 Aug 2023 15:51:45 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.2
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com
+ [IPv6:2a00:1450:4864:20::336])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id D1E718706A
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:42 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wm1-x336.google.com with SMTP id
+ 5b1f17b1804b1-3fee17aebc8so20256405e9.0
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625902; x=1693230702;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=OUPwGyIUGhu07FwRipI6J5nz3cUBWpffvk0k2vprnLg=;
+ b=mvjKik+ts2RRqakLQOi9t7J1i101HYF0aguRZ/P4y3h8SvaC+jrWNXPy+MyUiGFatO
+ EW5N4iqonVrCvE+i19nnSxA3TW5G5ItgSDTN6yq5TEp806h08MC17nKgCuRk/Urg+Nkj
+ ZewK+CW+lOR6k2kB8LtZylmeke1YHCeGMXq9VMK1hsm4co4hgSx0ZJ1OXiP5+tc4mVug
+ L2WSO1+ILyeHTT0N/dHw3FHShX08Y0SisUe32K946KofaqN6teHjb172uNMPVvd4Nk1S
+ G2GYNvIigYOzyXNzeBRUDXG3TkK8+ioXwBLZ4iqTsf77Dc0p2ePFbhc23gHzBcKBpUSc
+ O2nA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625902; x=1693230702;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=OUPwGyIUGhu07FwRipI6J5nz3cUBWpffvk0k2vprnLg=;
+ b=PY5C635/8jWW5ixQ4L1L3j9qeTGHNNV7zdPW6utGplgCgNorieSsCHQweRvRmMeEuD
+ MFr4iXeMz4fuhtbE79McVeS1D2v3BXvw2DX52qn7G6MlWSp/OVuocmhZPavm+DsYq7wJ
+ D//vupLeuSNo0SXsniHXWL8NlKNfz7qnozFFui+kEvO0IwOmVbDRI99V9uZM3ng9hERg
+ y3hKkIFQSgXYtPJ+4h3reOPhrZLXW5t/o9rXjgeC+l6WyxkI6UASNgww0aC0iwiIg40B
+ enEpHJN00lL6FOkCuYsMay4itv3ydNVuzZHbW7w6tmgDHIWKLg4yi4tFuiSgl+EnJluq
+ pqDw==
+X-Gm-Message-State: AOJu0YzfIxtWigpVmRfL01E4NvwPLzRkCCjd173t25icCTVna47obihz
+ mXXbV/Xvlo7hwqge7/MU2LnnCJaUcgE=
+X-Google-Smtp-Source: 
+ AGHT+IFzj3fGJ3yOnSTVNmg3QQIrMsHdzvHVI7a3IQjx0jS8kD0qBSvWJ3Z5+c4jA0D6oPZBiuGxwA==
+X-Received: by 2002:a5d:6811:0:b0:319:8a5a:ab5e with SMTP id
+ w17-20020a5d6811000000b003198a5aab5emr4349395wru.38.1692625902291;
+ Mon, 21 Aug 2023 06:51:42 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.40
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:41 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 08/13] video: Add damage notification on bmp display
+Date: Mon, 21 Aug 2023 16:51:05 +0300
+Message-Id: <20230821135111.3558478-9-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Alexander Graf <agraf@csgraf.de>
+
+Let's report the video damage when we draw a bitmap on the screen. This
+way we can later lazily flush only relevant regions to hardware.
+
+Signed-off-by: Alexander Graf <agraf@csgraf.de>
+Reported-by: Da Xue <da@libre.computer>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+(no changes since v1)
+
+ drivers/video/video_bmp.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/video/video_bmp.c b/drivers/video/video_bmp.c
+index 45f003c8251a..10943b9ca19f 100644
+--- a/drivers/video/video_bmp.c
++++ b/drivers/video/video_bmp.c
+@@ -460,6 +460,8 @@ int video_bmp_display(struct udevice *dev, ulong bmp_image, int x, int y,
+ 		break;
+ 	};
+ 
++	video_damage(dev, x, y, width, height);
++
+ 	/* Find the position of the top left of the image in the framebuffer */
+ 	fb = (uchar *)(priv->fb + y * priv->line_length + x * bpix / 8);
+ 	ret = video_sync_copy(dev, start, fb);
+
+From patchwork Mon Aug 21 13:51:06 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823652
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=rvkBTDGo;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv7Y6TNDz1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:52:57 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id B23478708D;
+	Mon, 21 Aug 2023 15:51:48 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="rvkBTDGo";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id E994E87081; Mon, 21 Aug 2023 15:51:47 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.2
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com
+ [IPv6:2a00:1450:4864:20::430])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 4A29E8708E
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:45 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wr1-x430.google.com with SMTP id
+ ffacd0b85a97d-31427ddd3fbso3057122f8f.0
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625905; x=1693230705;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=NHWfOmBWnCfG15vLo7N7Y/b5x/nSoPE0dmgy30xOm9Q=;
+ b=rvkBTDGokSsZ+zHSmCyephYHOa1zCgYEH1V/eHcDIaJehG3LF1h3ZetBhv0F1WCnRL
+ dg0OqSl4nhT+d01IqkhLNI1FTeIJQeE/FHwY83jActydA9RdIKB97V7VAmOnABjsedPs
+ n/m1fNRUpKdpm/TBglBcCWTlhrozxmO+plcVOAjMhNlQQGUGkRo1eq/yHOw8pzfiIQVT
+ 4G4hJi3ePKSsEYbd1YuMZSkrzN70N+Erw/eeRb2QAdkn4J6xcJyPMEWirh7uNV2erutB
+ ZzxtmQOTBV9y19HeQkYKJeCnpReJ2LaLzTJj72ehPZpZqbYfj67OE+MeCC6Yt/m3YILh
+ fpGQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625905; x=1693230705;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=NHWfOmBWnCfG15vLo7N7Y/b5x/nSoPE0dmgy30xOm9Q=;
+ b=i5Ecd9fdl1ZJU0VqAc78F3Pmf9jo/gquJagwYJOv+0Gs8ayWCAJVUNkBV1a10fi3YU
+ uHNi0JjDvPtp8HPET+X5ywPbVDMbGOtad+ZjijeZL+mbC+Zc+lN2Oy35AoZjAeiYYqcL
+ qr+tjpJBWmj7lsr4rZ+Tqpc5m93dDUcxAeKZeOas3KQ+oM/S5zaPEb6puDJuVXTGbx9/
+ NF+fyUg6I5MN+ZrT/+2pj8da5MpJaSlYzzymyg7JmdELwMKcBJsOuVNFfj+kXHLAmapY
+ MCO+hRidacGMoSYFLc/PHU7rU1qZqAWuizW35JPJmGYWschbDBhU5HWTPkJ8ifdZ9dqO
+ 7kkA==
+X-Gm-Message-State: AOJu0YxlhwAy04+v9sqR7+z6BpzMYlqGrKNxnrBV5TAuFHvCn94+0y5X
+ UCsHr11K/guiHrF8/+oTMNTEUjwCaRQ=
+X-Google-Smtp-Source: 
+ AGHT+IF9A6Dqme3W/tV3JyovhEsU6i4A15qi8QyYKIlOrt7P6EPMkzmv+B+4oB2S58BxD/9oTr/SHQ==
+X-Received: by 2002:a5d:4988:0:b0:31a:e6c2:770d with SMTP id
+ r8-20020a5d4988000000b0031ae6c2770dmr4196623wrq.36.1692625904737;
+ Mon, 21 Aug 2023 06:51:44 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.42
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:44 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 09/13] efi_loader: GOP: Add damage notification on BLT
+Date: Mon, 21 Aug 2023 16:51:06 +0300
+Message-Id: <20230821135111.3558478-10-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Alexander Graf <agraf@csgraf.de>
+
+Now that we have a damage tracking API, let's populate damage done by
+UEFI payloads when they BLT data onto the screen.
+
+Signed-off-by: Alexander Graf <agraf@csgraf.de>
+Reported-by: Da Xue <da@libre.computer>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+[Alper: Add struct comment for new member]
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+Changes in v5:
+- Document new vdev field in struct efi_gop_obj comment
+
+Changes in v4:
+- Skip damage on EfiBltVideoToBltBuffer
+
+Changes in v3:
+- Adapt to always assume DM is used
+
+Changes in v2:
+- Remove ifdefs from gop
+
+ lib/efi_loader/efi_gop.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/lib/efi_loader/efi_gop.c b/lib/efi_loader/efi_gop.c
+index 778b693f983a..db6535e080c4 100644
+--- a/lib/efi_loader/efi_gop.c
++++ b/lib/efi_loader/efi_gop.c
+@@ -24,6 +24,7 @@ static const efi_guid_t efi_gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+  * @ops:	graphical output protocol interface
+  * @info:	graphical output mode information
+  * @mode:	graphical output mode
++ * @vdev:	backing video device
+  * @bpix:	bits per pixel
+  * @fb:		frame buffer
+  */
+@@ -32,6 +33,7 @@ struct efi_gop_obj {
+ 	struct efi_gop ops;
+ 	struct efi_gop_mode_info info;
+ 	struct efi_gop_mode mode;
++	struct udevice *vdev;
+ 	/* Fields we only have access to during init */
+ 	u32 bpix;
+ 	void *fb;
+@@ -120,6 +122,7 @@ static __always_inline efi_status_t gop_blt_int(struct efi_gop *this,
+ 	u32 *fb32 = gopobj->fb;
+ 	u16 *fb16 = gopobj->fb;
+ 	struct efi_gop_pixel *buffer = __builtin_assume_aligned(bufferp, 4);
++	bool blt_to_video = (operation != EFI_BLT_VIDEO_TO_BLT_BUFFER);
+ 
+ 	if (delta) {
+ 		/* Check for 4 byte alignment */
+@@ -243,6 +246,9 @@ static __always_inline efi_status_t gop_blt_int(struct efi_gop *this,
+ 		dlineoff += dwidth;
+ 	}
+ 
++	if (blt_to_video)
++		video_damage(gopobj->vdev, dx, dy, width, height);
++
+ 	return EFI_SUCCESS;
+ }
+ 
+@@ -548,6 +554,7 @@ efi_status_t efi_gop_register(void)
+ 	gopobj->info.pixels_per_scanline = col;
+ 	gopobj->bpix = bpix;
+ 	gopobj->fb = fb;
++	gopobj->vdev = vdev;
+ 
+ 	return EFI_SUCCESS;
+ }
+
+From patchwork Mon Aug 21 13:51:07 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823653
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=SJ3CoTwS;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv7l6Gwbz1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:53:07 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 04C3A87091;
+	Mon, 21 Aug 2023 15:51:52 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="SJ3CoTwS";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 79C6786F0A; Mon, 21 Aug 2023 15:51:50 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.2
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com
+ [IPv6:2a00:1450:4864:20::435])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id E3F3B86E80
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:47 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wr1-x435.google.com with SMTP id
+ ffacd0b85a97d-31aeef88a55so1551204f8f.2
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625907; x=1693230707;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=l/DCoXVnGlEMqWseytQAYuhC9MvrFlVv7QEu+lzOB9U=;
+ b=SJ3CoTwShv0m1a2l77IYGRiPJhE773qxJozbJ8TLkbWb/Fs3vzMjaetMjO1LteCIix
+ nxWVY9KC93yaMYqJT6SqYWKi1BaFToYnd6muvummJcQpRouAllJWg2nVkF0e6rb8GdHn
+ kEvHDvCo4Xq4Lrpvs6/W0ONesn+kGcCJbX3+BARXOoTD87bHAQpb5gcTr6FjYwUraYf/
+ 31t1qEak7+tRD5cuPx0ItVaX8KSHeAMuueL0gEw6Wt64zNUyAO7W7cCRNJFMIsBkB2Lw
+ IOsoOk7kBgIqU/InShFLnIoLlW9EafAood5bDff+/ADKYaXgkgxpBbWQWgtF6tmmvjGO
+ gfgg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625907; x=1693230707;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=l/DCoXVnGlEMqWseytQAYuhC9MvrFlVv7QEu+lzOB9U=;
+ b=Tx8Anl+tKgGLw4YpMhb5VbWFhDaaZ7izCBtT/Mun3zxxONGjrw/1uYrQVf/HxeEzcw
+ 0VQqKGIC9Kek3RaHw20BGPdbmmDTmaVo3IGNrikhp2qDmM0bBH2AVbn0K5MV5t9dwKsA
+ U5D/cFon6pqj8sco6Dd5oVBskjrgqlgNtd3HXzCrfuFmFtsXxecVmlgKOnnE8Kj+CGGI
+ D2EMM/0yQCq/vuxC4/ISIiaRk0/6GCX55V8DYg+claM+h691kk/LGeEGXJqs5X1wFGQU
+ EZeKiKrY2VvqZ7yOXoriyel6QE7BvHmCmurDC+oji/do1hnGp/6NPxPFV/ABKsRmjPGY
+ V6Eg==
+X-Gm-Message-State: AOJu0YxqpYt8rTBNvBZ9hiz/qYI+xhkc2uURaJNeyYssFbd+tACGWJtX
+ 6fE/7qVWobRKTs1ZWXtn3qcomaeF/nc=
+X-Google-Smtp-Source: 
+ AGHT+IHlrJ5IlwhVESQ4N6S+FeCJPNau4Ry7TWJN4H6yUmdpI19HJsGEPwtYtoPvcLuI4yNltjc9CQ==
+X-Received: by 2002:a5d:4483:0:b0:317:dada:2417 with SMTP id
+ j3-20020a5d4483000000b00317dada2417mr4326536wrq.31.1692625907186;
+ Mon, 21 Aug 2023 06:51:47 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.45
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:46 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 10/13] video: Only dcache flush damaged lines
+Date: Mon, 21 Aug 2023 16:51:07 +0300
+Message-Id: <20230821135111.3558478-11-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Alexander Graf <agraf@csgraf.de>
+
+Now that we have a damage area tells us which parts of the frame buffer
+actually need updating, let's only dcache flush those on video_sync()
+calls. With this optimization in place, frame buffer updates - especially
+on large screen such as 4k displays - speed up significantly.
+
+Signed-off-by: Alexander Graf <agraf@csgraf.de>
+Reported-by: Da Xue <da@libre.computer>
+[Alper: Use damage.xstart/yend, IS_ENABLED()]
+Co-developed-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+Changes in v5:
+- Use xstart, ystart, xend, yend as names for damage region
+- Use IS_ENABLED() instead of CONFIG_IS_ENABLED()
+
+Changes in v2:
+- Fix dcache range; we were flushing too much before
+- Remove ifdefs
+
+ drivers/video/video-uclass.c | 41 +++++++++++++++++++++++++++++++-----
+ 1 file changed, 36 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/video-uclass.c b/drivers/video/video-uclass.c
+index 8bfcbc88dda7..a50220bcc684 100644
+--- a/drivers/video/video-uclass.c
++++ b/drivers/video/video-uclass.c
+@@ -385,6 +385,41 @@ void video_damage(struct udevice *vid, int x, int y, int width, int height)
+ 	priv->damage.yend = max(yend, priv->damage.yend);
+ }
+ 
++#if defined(CONFIG_ARM) && !CONFIG_IS_ENABLED(SYS_DCACHE_OFF)
++static void video_flush_dcache(struct udevice *vid)
++{
++	struct video_priv *priv = dev_get_uclass_priv(vid);
++
++	if (!priv->flush_dcache)
++		return;
++
++	if (!IS_ENABLED(CONFIG_VIDEO_DAMAGE)) {
++		flush_dcache_range((ulong)priv->fb,
++				   ALIGN((ulong)priv->fb + priv->fb_size,
++					 CONFIG_SYS_CACHELINE_SIZE));
++
++		return;
++	}
++
++	if (priv->damage.xend && priv->damage.yend) {
++		int lstart = priv->damage.xstart * VNBYTES(priv->bpix);
++		int lend = priv->damage.xend * VNBYTES(priv->bpix);
++		int y;
++
++		for (y = priv->damage.ystart; y < priv->damage.yend; y++) {
++			ulong fb = (ulong)priv->fb;
++			ulong start = fb + (y * priv->line_length) + lstart;
++			ulong end = start + lend - lstart;
++
++			start = ALIGN_DOWN(start, CONFIG_SYS_CACHELINE_SIZE);
++			end = ALIGN(end, CONFIG_SYS_CACHELINE_SIZE);
++
++			flush_dcache_range(start, end);
++		}
++	}
++}
++#endif
++
+ /* Flush video activity to the caches */
+ int video_sync(struct udevice *vid, bool force)
+ {
+@@ -404,11 +439,7 @@ int video_sync(struct udevice *vid, bool force)
+ 	 * out whether it exists? For now, ARM is safe.
+ 	 */
+ #if defined(CONFIG_ARM) && !CONFIG_IS_ENABLED(SYS_DCACHE_OFF)
+-	if (priv->flush_dcache) {
+-		flush_dcache_range((ulong)priv->fb,
+-				   ALIGN((ulong)priv->fb + priv->fb_size,
+-					 CONFIG_SYS_CACHELINE_SIZE));
+-	}
++	video_flush_dcache(vid);
+ #elif defined(CONFIG_VIDEO_SANDBOX_SDL)
+ 	static ulong last_sync;
+ 
+
+From patchwork Mon Aug 21 13:51:08 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823654
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=JgtEabWc;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv7w4Mskz1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:53:16 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 4790487096;
+	Mon, 21 Aug 2023 15:51:54 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="JgtEabWc";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 102DC87096; Mon, 21 Aug 2023 15:51:54 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.2
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com
+ [IPv6:2a00:1450:4864:20::429])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 4AFE187098
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:50 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wr1-x429.google.com with SMTP id
+ ffacd0b85a97d-31c3726cc45so1247414f8f.0
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625910; x=1693230710;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=NdoZCMaizC3Y759MOjDBPu1VoZ+fIm/Lqzoh+gR4stQ=;
+ b=JgtEabWcIca2ALjUCCqGgXmUf5MREa+Jm3Yt8fmf6mwr8MrhP5Iu7KssN+MMQbAxKO
+ cl+LarTpXoK8lh4x2WmdcUKViUJdCAMCFJCk6vdMhIFAjaBH1Sqhudg315eFGharTw6G
+ 7FFSDdE1ZAablttQmfgcm59Ilk5+2QRAFycWcOiue5yFfF8RSAAAF8UHkl7rKxgQKHCO
+ NWC3P4PdjYEtaQFoJ4R5txJ07Wdvoptc9JVL9WGf4wSL5X6fm+SbalQaW3YgFuKNy0fk
+ 0+lmUOMDOXmwx4iGWZd6+LRFXYEZGCZ95AvjoDF83ZlL9Nu1oUvB/qzH7PRJatx6j/mw
+ J8Zw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625910; x=1693230710;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=NdoZCMaizC3Y759MOjDBPu1VoZ+fIm/Lqzoh+gR4stQ=;
+ b=ATA2PnRfDc2gQVzxEqGIcgBsTvJvkOPNl2NSZEoxqmZfEe/94an/QM50JhcxX0wNEA
+ 0HpCsEsyDLhFnjW4APp/TYwLoc0mbRD/T517DYROiuJLUSRxyO/NApA1qyRJpVQTqpRc
+ dRZ5hG5VoUH3oHfwZN1abRKxbIogLNiJhSSNDvjA01RYJwTZY6Fq8xUJCYp9gI28/OI0
+ oZ0SA+qdXZ4UvNR/uqun2tysI+JnatTKlbwSfCF7q/sj5AfH/VNk3EqNROuXlIBRMWI8
+ pgosvMd73/GvTMQvsWPgGNNc3fhZgcnLKIoQFKdoqCeSFAufSLREsoWPLMMH1xXuh1lG
+ JKFQ==
+X-Gm-Message-State: AOJu0YyKi/tYIN4uVjau5AbbNkJPzybGF79aUx+ls+uiyxVTGeu0zy64
+ aMCSasGPaxyg+ogYkqU0Dx/1q3mIbnM=
+X-Google-Smtp-Source: 
+ AGHT+IHsb00O74X0NrGSp+Znx7MktY8oHr2PL7yyjJMmEkZVU5lzx7Wg/Yr0hFddlw1zsptntp6etA==
+X-Received: by 2002:a05:6000:1cce:b0:314:ca7:f30b with SMTP id
+ bf14-20020a0560001cce00b003140ca7f30bmr5251008wrb.54.1692625909678;
+ Mon, 21 Aug 2023 06:51:49 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.47
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:49 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 11/13] video: Use VIDEO_DAMAGE for VIDEO_COPY
+Date: Mon, 21 Aug 2023 16:51:08 +0300
+Message-Id: <20230821135111.3558478-12-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Alexander Graf <agraf@csgraf.de>
+
+CONFIG_VIDEO_COPY implemented a range-based copying mechanism: If we
+print a single character, it will always copy the full range of bytes
+from the top left corner of the character to the lower right onto the
+uncached frame buffer. This includes pretty much the full line contents
+of the printed character.
+
+Since we now have proper damage tracking, let's make use of that to reduce
+the amount of data we need to copy. With this patch applied, we will only
+copy the tiny rectangle surrounding characters when we print them,
+speeding up the video console.
+
+After this, changes to the main frame buffer are not immediately copied
+to the copy frame buffer, but postponed until the next video device
+sync. So issue an explicit sync before inspecting the copy frame buffer
+contents for the video tests.
+
+Signed-off-by: Alexander Graf <agraf@csgraf.de>
+[Alper: Rebase for fontdata->height/w, fill_part(), fix memmove(dev),
+        drop from defconfig, use damage.xstart/yend, use IS_ENABLED(),
+        call video_sync() before copy_fb check, update video_copy test]
+Co-developed-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+Changes in v5:
+- Remove video_sync_copy() also from video_fill(), video_fill_part()
+- Fix memmove() calls by removing the extra dev argument
+- Call video_sync() before checking copy_fb in video tests
+- Use xstart, ystart, xend, yend as names for damage region
+- Use met->baseline instead of priv->baseline
+- Use fontdata->height/width instead of VIDEO_FONT_HEIGHT/WIDTH
+- Use xstart, ystart, xend, yend as names for damage region
+- Use IS_ENABLED() instead of CONFIG_IS_ENABLED()
+- Drop VIDEO_DAMAGE from sandbox defconfig added in a new patch
+- Update dm_test_video_copy test added in a new patch
+
+Changes in v3:
+- Make VIDEO_COPY always select VIDEO_DAMAGE
+
+Changes in v2:
+- Add patch "video: Use VIDEO_DAMAGE for VIDEO_COPY"
+
+ configs/sandbox_defconfig         |  1 -
+ drivers/video/Kconfig             |  5 ++
+ drivers/video/console_normal.c    | 13 +----
+ drivers/video/console_rotate.c    | 44 +++-----------
+ drivers/video/console_truetype.c  | 16 +----
+ drivers/video/vidconsole-uclass.c | 16 -----
+ drivers/video/video-uclass.c      | 97 ++++++++-----------------------
+ drivers/video/video_bmp.c         |  7 ---
+ include/video.h                   | 37 ------------
+ include/video_console.h           | 52 -----------------
+ test/dm/video.c                   |  3 +-
+ 11 files changed, 43 insertions(+), 248 deletions(-)
+
+diff --git a/configs/sandbox_defconfig b/configs/sandbox_defconfig
+index 51b820f13121..259f31f26cee 100644
+--- a/configs/sandbox_defconfig
++++ b/configs/sandbox_defconfig
+@@ -307,7 +307,6 @@ CONFIG_USB_ETH_CDC=y
+ CONFIG_VIDEO=y
+ CONFIG_VIDEO_FONT_SUN12X22=y
+ CONFIG_VIDEO_COPY=y
+-CONFIG_VIDEO_DAMAGE=y
+ CONFIG_CONSOLE_ROTATION=y
+ CONFIG_CONSOLE_TRUETYPE=y
+ CONFIG_CONSOLE_TRUETYPE_CANTORAONE=y
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 97f494a1340b..b3fbd9d7d9ca 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -83,11 +83,14 @@ config VIDEO_PCI_DEFAULT_FB_SIZE
+ 
+ config VIDEO_COPY
+ 	bool "Enable copying the frame buffer to a hardware copy"
++	select VIDEO_DAMAGE
+ 	help
+ 	  On some machines (e.g. x86), reading from the frame buffer is very
+ 	  slow because it is uncached. To improve performance, this feature
+ 	  allows the frame buffer to be kept in cached memory (allocated by
+ 	  U-Boot) and then copied to the hardware frame-buffer as needed.
++	  It uses the VIDEO_DAMAGE feature to keep track of regions to copy
++	  and will only copy actually touched regions.
+ 
+ 	  To use this, your video driver must set @copy_base in
+ 	  struct video_uc_plat.
+@@ -105,6 +108,8 @@ config VIDEO_DAMAGE
+ 	  regions of the frame buffer that were modified before, speeding up
+ 	  screen refreshes significantly.
+ 
++	  It is also used by VIDEO_COPY to identify which regions changed.
++
+ config BACKLIGHT_PWM
+ 	bool "Generic PWM based Backlight Driver"
+ 	depends on BACKLIGHT && DM_PWM
+diff --git a/drivers/video/console_normal.c b/drivers/video/console_normal.c
+index a19ce6a2bc11..c44aa09473a3 100644
+--- a/drivers/video/console_normal.c
++++ b/drivers/video/console_normal.c
+@@ -35,10 +35,6 @@ static int console_set_row(struct udevice *dev, uint row, int clr)
+ 		fill_pixel_and_goto_next(&dst, clr, pbytes, pbytes);
+ 	end = dst;
+ 
+-	ret = vidconsole_sync_copy(dev, line, end);
+-	if (ret)
+-		return ret;
+-
+ 	video_damage(dev->parent,
+ 		     0,
+ 		     fontdata->height * row,
+@@ -57,14 +53,11 @@ static int console_move_rows(struct udevice *dev, uint rowdst,
+ 	void *dst;
+ 	void *src;
+ 	int size;
+-	int ret;
+ 
+ 	dst = vid_priv->fb + rowdst * fontdata->height * vid_priv->line_length;
+ 	src = vid_priv->fb + rowsrc * fontdata->height * vid_priv->line_length;
+ 	size = fontdata->height * vid_priv->line_length * count;
+-	ret = vidconsole_memmove(dev, dst, src, size);
+-	if (ret)
+-		return ret;
++	memmove(dst, src, size);
+ 
+ 	video_damage(dev->parent,
+ 		     0,
+@@ -108,10 +101,6 @@ static int console_putc_xy(struct udevice *dev, uint x_frac, uint y, char ch)
+ 		     fontdata->width,
+ 		     fontdata->height);
+ 
+-	ret = vidconsole_sync_copy(dev, start, line);
+-	if (ret)
+-		return ret;
+-
+ 	return VID_TO_POS(fontdata->width);
+ }
+ 
+diff --git a/drivers/video/console_rotate.c b/drivers/video/console_rotate.c
+index 6c3e7c1bb8dc..6e9067d1c7fb 100644
+--- a/drivers/video/console_rotate.c
++++ b/drivers/video/console_rotate.c
+@@ -21,7 +21,6 @@ static int console_set_row_1(struct udevice *dev, uint row, int clr)
+ 	int pbytes = VNBYTES(vid_priv->bpix);
+ 	void *start, *dst, *line;
+ 	int i, j;
+-	int ret;
+ 
+ 	start = vid_priv->fb + vid_priv->line_length -
+ 		(row + 1) * fontdata->height * pbytes;
+@@ -32,9 +31,6 @@ static int console_set_row_1(struct udevice *dev, uint row, int clr)
+ 			fill_pixel_and_goto_next(&dst, clr, pbytes, pbytes);
+ 		line += vid_priv->line_length;
+ 	}
+-	ret = vidconsole_sync_copy(dev, start, line);
+-	if (ret)
+-		return ret;
+ 
+ 	video_damage(dev->parent,
+ 		     vid_priv->xsize - ((row + 1) * fontdata->height),
+@@ -54,7 +50,7 @@ static int console_move_rows_1(struct udevice *dev, uint rowdst, uint rowsrc,
+ 	int pbytes = VNBYTES(vid_priv->bpix);
+ 	void *dst;
+ 	void *src;
+-	int j, ret;
++	int j;
+ 
+ 	dst = vid_priv->fb + vid_priv->line_length -
+ 		(rowdst + count) * fontdata->height * pbytes;
+@@ -62,10 +58,7 @@ static int console_move_rows_1(struct udevice *dev, uint rowdst, uint rowsrc,
+ 		(rowsrc + count) * fontdata->height * pbytes;
+ 
+ 	for (j = 0; j < vid_priv->ysize; j++) {
+-		ret = vidconsole_memmove(dev, dst, src,
+-					fontdata->height * pbytes * count);
+-		if (ret)
+-			return ret;
++		memmove(dst, src, fontdata->height * pbytes * count);
+ 		src += vid_priv->line_length;
+ 		dst += vid_priv->line_length;
+ 	}
+@@ -104,10 +97,6 @@ static int console_putc_xy_1(struct udevice *dev, uint x_frac, uint y, char ch)
+ 		return ret;
+ 
+ 	/* We draw backwards from 'start, so account for the first line */
+-	ret = vidconsole_sync_copy(dev, start - vid_priv->line_length, line);
+-	if (ret)
+-		return ret;
+-
+ 	video_damage(dev->parent,
+ 		     vid_priv->xsize - y - fontdata->height,
+ 		     linenum - 1,
+@@ -125,7 +114,7 @@ static int console_set_row_2(struct udevice *dev, uint row, int clr)
+ 	struct video_fontdata *fontdata = priv->fontdata;
+ 	void *start, *line, *dst, *end;
+ 	int pixels = fontdata->height * vid_priv->xsize;
+-	int i, ret;
++	int i;
+ 	int pbytes = VNBYTES(vid_priv->bpix);
+ 
+ 	start = vid_priv->fb + vid_priv->ysize * vid_priv->line_length -
+@@ -135,9 +124,6 @@ static int console_set_row_2(struct udevice *dev, uint row, int clr)
+ 	for (i = 0; i < pixels; i++)
+ 		fill_pixel_and_goto_next(&dst, clr, pbytes, pbytes);
+ 	end = dst;
+-	ret = vidconsole_sync_copy(dev, start, end);
+-	if (ret)
+-		return ret;
+ 
+ 	video_damage(dev->parent,
+ 		     0,
+@@ -163,8 +149,7 @@ static int console_move_rows_2(struct udevice *dev, uint rowdst, uint rowsrc,
+ 		vid_priv->line_length;
+ 	src = end - (rowsrc + count) * fontdata->height *
+ 		vid_priv->line_length;
+-	vidconsole_memmove(dev, dst, src,
+-			   fontdata->height * vid_priv->line_length * count);
++	memmove(dst, src, fontdata->height * vid_priv->line_length * count);
+ 
+ 	video_damage(dev->parent,
+ 		     0,
+@@ -199,11 +184,6 @@ static int console_putc_xy_2(struct udevice *dev, uint x_frac, uint y, char ch)
+ 	if (ret)
+ 		return ret;
+ 
+-	/* Add 4 bytes to allow for the first pixel writen */
+-	ret = vidconsole_sync_copy(dev, start + 4, line);
+-	if (ret)
+-		return ret;
+-
+ 	video_damage(dev->parent,
+ 		     x - fontdata->width + 1,
+ 		     linenum - fontdata->height + 1,
+@@ -220,7 +200,7 @@ static int console_set_row_3(struct udevice *dev, uint row, int clr)
+ 	struct video_fontdata *fontdata = priv->fontdata;
+ 	int pbytes = VNBYTES(vid_priv->bpix);
+ 	void *start, *dst, *line;
+-	int i, j, ret;
++	int i, j;
+ 
+ 	start = vid_priv->fb + row * fontdata->height * pbytes;
+ 	line = start;
+@@ -230,9 +210,6 @@ static int console_set_row_3(struct udevice *dev, uint row, int clr)
+ 			fill_pixel_and_goto_next(&dst, clr, pbytes, pbytes);
+ 		line += vid_priv->line_length;
+ 	}
+-	ret = vidconsole_sync_copy(dev, start, line);
+-	if (ret)
+-		return ret;
+ 
+ 	video_damage(dev->parent,
+ 		     row * fontdata->height,
+@@ -252,16 +229,13 @@ static int console_move_rows_3(struct udevice *dev, uint rowdst, uint rowsrc,
+ 	int pbytes = VNBYTES(vid_priv->bpix);
+ 	void *dst;
+ 	void *src;
+-	int j, ret;
++	int j;
+ 
+ 	dst = vid_priv->fb + rowdst * fontdata->height * pbytes;
+ 	src = vid_priv->fb + rowsrc * fontdata->height * pbytes;
+ 
+ 	for (j = 0; j < vid_priv->ysize; j++) {
+-		ret = vidconsole_memmove(dev, dst, src,
+-					fontdata->height * pbytes * count);
+-		if (ret)
+-			return ret;
++		memmove(dst, src, fontdata->height * pbytes * count);
+ 		src += vid_priv->line_length;
+ 		dst += vid_priv->line_length;
+ 	}
+@@ -296,10 +270,6 @@ static int console_putc_xy_3(struct udevice *dev, uint x_frac, uint y, char ch)
+ 	line = start;
+ 
+ 	ret = fill_char_horizontally(pfont, &line, vid_priv, fontdata, NORMAL_DIRECTION);
+-	if (ret)
+-		return ret;
+-	/* Add a line to allow for the first pixels writen */
+-	ret = vidconsole_sync_copy(dev, start + vid_priv->line_length, line);
+ 	if (ret)
+ 		return ret;
+ 
+diff --git a/drivers/video/console_truetype.c b/drivers/video/console_truetype.c
+index 0adbf9cc3d67..07bb0af71311 100644
+--- a/drivers/video/console_truetype.c
++++ b/drivers/video/console_truetype.c
+@@ -182,7 +182,6 @@ static int console_truetype_set_row(struct udevice *dev, uint row, int clr)
+ 	struct console_tt_priv *priv = dev_get_priv(dev);
+ 	struct console_tt_metrics *met = priv->cur_met;
+ 	void *end, *line;
+-	int ret;
+ 
+ 	line = vid_priv->fb + row * met->font_size * vid_priv->line_length;
+ 	end = line + met->font_size * vid_priv->line_length;
+@@ -218,9 +217,6 @@ static int console_truetype_set_row(struct udevice *dev, uint row, int clr)
+ 	default:
+ 		return -ENOSYS;
+ 	}
+-	ret = vidconsole_sync_copy(dev, line, end);
+-	if (ret)
+-		return ret;
+ 
+ 	video_damage(dev->parent,
+ 		     0,
+@@ -240,14 +236,11 @@ static int console_truetype_move_rows(struct udevice *dev, uint rowdst,
+ 	struct console_tt_metrics *met = priv->cur_met;
+ 	void *dst;
+ 	void *src;
+-	int i, diff, ret;
++	int i, diff;
+ 
+ 	dst = vid_priv->fb + rowdst * met->font_size * vid_priv->line_length;
+ 	src = vid_priv->fb + rowsrc * met->font_size * vid_priv->line_length;
+-	ret = vidconsole_memmove(dev, dst, src, met->font_size *
+-				 vid_priv->line_length * count);
+-	if (ret)
+-		return ret;
++	memmove(dst, src, met->font_size * vid_priv->line_length * count);
+ 
+ 	/* Scroll up our position history */
+ 	diff = (rowsrc - rowdst) * met->font_size;
+@@ -280,7 +273,7 @@ static int console_truetype_putc_xy(struct udevice *dev, uint x, uint y,
+ 	u8 *bits, *data;
+ 	int advance;
+ 	void *start, *end, *line;
+-	int row, ret;
++	int row;
+ 
+ 	/* First get some basic metrics about this character */
+ 	stbtt_GetCodepointHMetrics(font, ch, &advance, &lsb);
+@@ -424,9 +417,6 @@ static int console_truetype_putc_xy(struct udevice *dev, uint x, uint y,
+ 		     width,
+ 		     height);
+ 
+-	ret = vidconsole_sync_copy(dev, start, line);
+-	if (ret)
+-		return ret;
+ 	free(data);
+ 
+ 	return width_frac;
+diff --git a/drivers/video/vidconsole-uclass.c b/drivers/video/vidconsole-uclass.c
+index 05f930478096..27a1e8ec3e49 100644
+--- a/drivers/video/vidconsole-uclass.c
++++ b/drivers/video/vidconsole-uclass.c
+@@ -682,22 +682,6 @@ UCLASS_DRIVER(vidconsole) = {
+ 	.per_device_auto	= sizeof(struct vidconsole_priv),
+ };
+ 
+-#ifdef CONFIG_VIDEO_COPY
+-int vidconsole_sync_copy(struct udevice *dev, void *from, void *to)
+-{
+-	struct udevice *vid = dev_get_parent(dev);
+-
+-	return video_sync_copy(vid, from, to);
+-}
+-
+-int vidconsole_memmove(struct udevice *dev, void *dst, const void *src,
+-		       int size)
+-{
+-	memmove(dst, src, size);
+-	return vidconsole_sync_copy(dev, dst, dst + size);
+-}
+-#endif
+-
+ int vidconsole_clear_and_reset(struct udevice *dev)
+ {
+ 	int ret;
+diff --git a/drivers/video/video-uclass.c b/drivers/video/video-uclass.c
+index a50220bcc684..c79499252a22 100644
+--- a/drivers/video/video-uclass.c
++++ b/drivers/video/video-uclass.c
+@@ -160,7 +160,7 @@ int video_fill_part(struct udevice *dev, int xstart, int ystart, int xend,
+ 	struct video_priv *priv = dev_get_uclass_priv(dev);
+ 	void *start, *line;
+ 	int pixels = xend - xstart;
+-	int row, i, ret;
++	int row, i;
+ 
+ 	start = priv->fb + ystart * priv->line_length;
+ 	start += xstart * VNBYTES(priv->bpix);
+@@ -200,10 +200,6 @@ int video_fill_part(struct udevice *dev, int xstart, int ystart, int xend,
+ 		line += priv->line_length;
+ 	}
+ 
+-	ret = video_sync_copy(dev, start, line);
+-	if (ret)
+-		return ret;
+-
+ 	video_damage(dev, xstart, ystart, xend - xstart, yend - ystart);
+ 
+ 	return 0;
+@@ -223,7 +219,6 @@ int video_reserve_from_bloblist(struct video_handoff *ho)
+ int video_fill(struct udevice *dev, u32 colour)
+ {
+ 	struct video_priv *priv = dev_get_uclass_priv(dev);
+-	int ret;
+ 
+ 	switch (priv->bpix) {
+ 	case VIDEO_BPP16:
+@@ -248,9 +243,6 @@ int video_fill(struct udevice *dev, u32 colour)
+ 		memset(priv->fb, colour, priv->fb_size);
+ 		break;
+ 	}
+-	ret = video_sync_copy(dev, priv->fb, priv->fb + priv->fb_size);
+-	if (ret)
+-		return ret;
+ 
+ 	video_damage(dev, 0, 0, priv->xsize, priv->ysize);
+ 
+@@ -420,6 +412,27 @@ static void video_flush_dcache(struct udevice *vid)
+ }
+ #endif
+ 
++static void video_flush_copy(struct udevice *vid)
++{
++	struct video_priv *priv = dev_get_uclass_priv(vid);
++
++	if (!priv->copy_fb)
++		return;
++
++	if (priv->damage.xend && priv->damage.yend) {
++		int lstart = priv->damage.xstart * VNBYTES(priv->bpix);
++		int lend = priv->damage.xend * VNBYTES(priv->bpix);
++		int y;
++
++		for (y = priv->damage.ystart; y < priv->damage.yend; y++) {
++			ulong offset = (y * priv->line_length) + lstart;
++			ulong len = lend - lstart;
++
++			memcpy(priv->copy_fb + offset, priv->fb + offset, len);
++		}
++	}
++}
++
+ /* Flush video activity to the caches */
+ int video_sync(struct udevice *vid, bool force)
+ {
+@@ -427,6 +440,9 @@ int video_sync(struct udevice *vid, bool force)
+ 	struct video_ops *ops = video_get_ops(vid);
+ 	int ret;
+ 
++	if (IS_ENABLED(CONFIG_VIDEO_COPY))
++		video_flush_copy(vid);
++
+ 	if (ops && ops->video_sync) {
+ 		ret = ops->video_sync(vid);
+ 		if (ret)
+@@ -503,69 +519,6 @@ int video_get_ysize(struct udevice *dev)
+ 	return priv->ysize;
+ }
+ 
+-#ifdef CONFIG_VIDEO_COPY
+-int video_sync_copy(struct udevice *dev, void *from, void *to)
+-{
+-	struct video_priv *priv = dev_get_uclass_priv(dev);
+-
+-	if (priv->copy_fb) {
+-		long offset, size;
+-
+-		/* Find the offset of the first byte to copy */
+-		if ((ulong)to > (ulong)from) {
+-			size = to - from;
+-			offset = from - priv->fb;
+-		} else {
+-			size = from - to;
+-			offset = to - priv->fb;
+-		}
+-
+-		/*
+-		 * Allow a bit of leeway for valid requests somewhere near the
+-		 * frame buffer
+-		 */
+-		if (offset < -priv->fb_size || offset > 2 * priv->fb_size) {
+-#ifdef DEBUG
+-			char str[120];
+-
+-			snprintf(str, sizeof(str),
+-				 "[** FAULT sync_copy fb=%p, from=%p, to=%p, offset=%lx]",
+-				 priv->fb, from, to, offset);
+-			console_puts_select_stderr(true, str);
+-#endif
+-			return -EFAULT;
+-		}
+-
+-		/*
+-		 * Silently crop the memcpy. This allows callers to avoid doing
+-		 * this themselves. It is common for the end pointer to go a
+-		 * few lines after the end of the frame buffer, since most of
+-		 * the update algorithms terminate a line after their last write
+-		 */
+-		if (offset + size > priv->fb_size) {
+-			size = priv->fb_size - offset;
+-		} else if (offset < 0) {
+-			size += offset;
+-			offset = 0;
+-		}
+-
+-		memcpy(priv->copy_fb + offset, priv->fb + offset, size);
+-	}
+-
+-	return 0;
+-}
+-
+-int video_sync_copy_all(struct udevice *dev)
+-{
+-	struct video_priv *priv = dev_get_uclass_priv(dev);
+-
+-	video_sync_copy(dev, priv->fb, priv->fb + priv->fb_size);
+-
+-	return 0;
+-}
+-
+-#endif
+-
+ #define SPLASH_DECL(_name) \
+ 	extern u8 __splash_ ## _name ## _begin[]; \
+ 	extern u8 __splash_ ## _name ## _end[]
+diff --git a/drivers/video/video_bmp.c b/drivers/video/video_bmp.c
+index 10943b9ca19f..da2bbe864a03 100644
+--- a/drivers/video/video_bmp.c
++++ b/drivers/video/video_bmp.c
+@@ -268,7 +268,6 @@ int video_bmp_display(struct udevice *dev, ulong bmp_image, int x, int y,
+ 	enum video_format eformat;
+ 	struct bmp_color_table_entry *palette;
+ 	int hdr_size;
+-	int ret;
+ 
+ 	if (!bmp || !(bmp->header.signature[0] == 'B' &&
+ 	    bmp->header.signature[1] == 'M')) {
+@@ -462,11 +461,5 @@ int video_bmp_display(struct udevice *dev, ulong bmp_image, int x, int y,
+ 
+ 	video_damage(dev, x, y, width, height);
+ 
+-	/* Find the position of the top left of the image in the framebuffer */
+-	fb = (uchar *)(priv->fb + y * priv->line_length + x * bpix / 8);
+-	ret = video_sync_copy(dev, start, fb);
+-	if (ret)
+-		return log_ret(ret);
+-
+ 	return video_sync(dev, false);
+ }
+diff --git a/include/video.h b/include/video.h
+index a522f33949e5..42e57b44188d 100644
+--- a/include/video.h
++++ b/include/video.h
+@@ -350,43 +350,6 @@ void video_set_default_colors(struct udevice *dev, bool invert);
+  */
+ int video_default_font_height(struct udevice *dev);
+ 
+-#ifdef CONFIG_VIDEO_COPY
+-/**
+- * vidconsole_sync_copy() - Sync back to the copy framebuffer
+- *
+- * This ensures that the copy framebuffer has the same data as the framebuffer
+- * for a particular region. It should be called after the framebuffer is updated
+- *
+- * @from and @to can be in either order. The region between them is synced.
+- *
+- * @dev: Vidconsole device being updated
+- * @from: Start/end address within the framebuffer (->fb)
+- * @to: Other address within the frame buffer
+- * Return: 0 if OK, -EFAULT if the start address is before the start of the
+- *	frame buffer start
+- */
+-int video_sync_copy(struct udevice *dev, void *from, void *to);
+-
+-/**
+- * video_sync_copy_all() - Sync the entire framebuffer to the copy
+- *
+- * @dev: Vidconsole device being updated
+- * Return: 0 (always)
+- */
+-int video_sync_copy_all(struct udevice *dev);
+-#else
+-static inline int video_sync_copy(struct udevice *dev, void *from, void *to)
+-{
+-	return 0;
+-}
+-
+-static inline int video_sync_copy_all(struct udevice *dev)
+-{
+-	return 0;
+-}
+-
+-#endif
+-
+ /**
+  * video_damage() - Notify the video subsystem about screen updates.
+  *
+diff --git a/include/video_console.h b/include/video_console.h
+index 2694e44f6ecf..caadeb878989 100644
+--- a/include/video_console.h
++++ b/include/video_console.h
+@@ -404,56 +404,4 @@ void vidconsole_list_fonts(struct udevice *dev);
+  */
+ int vidconsole_get_font_size(struct udevice *dev, const char **name, uint *sizep);
+ 
+-#ifdef CONFIG_VIDEO_COPY
+-/**
+- * vidconsole_sync_copy() - Sync back to the copy framebuffer
+- *
+- * This ensures that the copy framebuffer has the same data as the framebuffer
+- * for a particular region. It should be called after the framebuffer is updated
+- *
+- * @from and @to can be in either order. The region between them is synced.
+- *
+- * @dev: Vidconsole device being updated
+- * @from: Start/end address within the framebuffer (->fb)
+- * @to: Other address within the frame buffer
+- * Return: 0 if OK, -EFAULT if the start address is before the start of the
+- *	frame buffer start
+- */
+-int vidconsole_sync_copy(struct udevice *dev, void *from, void *to);
+-
+-/**
+- * vidconsole_memmove() - Perform a memmove() within the frame buffer
+- *
+- * This handles a memmove(), e.g. for scrolling. It also updates the copy
+- * framebuffer.
+- *
+- * @dev: Vidconsole device being updated
+- * @dst: Destination address within the framebuffer (->fb)
+- * @src: Source address within the framebuffer (->fb)
+- * @size: Number of bytes to transfer
+- * Return: 0 if OK, -EFAULT if the start address is before the start of the
+- *	frame buffer start
+- */
+-int vidconsole_memmove(struct udevice *dev, void *dst, const void *src,
+-		       int size);
+-#else
+-
+-#include <string.h>
+-
+-static inline int vidconsole_sync_copy(struct udevice *dev, void *from,
+-				       void *to)
+-{
+-	return 0;
+-}
+-
+-static inline int vidconsole_memmove(struct udevice *dev, void *dst,
+-				     const void *src, int size)
+-{
+-	memmove(dst, src, size);
+-
+-	return 0;
+-}
+-
+-#endif
+-
+ #endif
+diff --git a/test/dm/video.c b/test/dm/video.c
+index 8c7d9800a42e..4c3bcd26e94f 100644
+--- a/test/dm/video.c
++++ b/test/dm/video.c
+@@ -106,6 +106,7 @@ static int check_copy_frame_buffer(struct unit_test_state *uts,
+ 	if (!IS_ENABLED(CONFIG_VIDEO_COPY))
+ 		return 0;
+ 
++	video_sync(dev, false);
+ 	ut_assertf(!memcmp(priv->fb, priv->copy_fb, priv->fb_size),
+ 		   "Copy framebuffer does not match fb");
+ 
+@@ -706,7 +707,7 @@ static int dm_test_video_copy(struct unit_test_state *uts)
+ 	vidconsole_put_string(con, test_string);
+ 	vidconsole_put_string(con, test_string);
+ 	ut_asserteq(7589, compress_frame_buffer(uts, dev, false));
+-	ut_asserteq(5278, compress_frame_buffer(uts, dev, true));
++	ut_asserteq(4127, compress_frame_buffer(uts, dev, true));
+ 
+ 	return 0;
+ }
+
+From patchwork Mon Aug 21 13:51:09 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823655
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=Q9fX66MT;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv8541j7z1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:53:25 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 909B287075;
+	Mon, 21 Aug 2023 15:51:56 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Q9fX66MT";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 801C187082; Mon, 21 Aug 2023 15:51:55 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.2
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com
+ [IPv6:2a00:1450:4864:20::431])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id D67548709E
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:52 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wr1-x431.google.com with SMTP id
+ ffacd0b85a97d-317716a4622so3055294f8f.1
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625912; x=1693230712;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=pB2qI48avq9qUXnFEl+wSnmS8SG0cxx3SZjicfp6H7M=;
+ b=Q9fX66MTTcUQaIK9Ypbt13c6159mxahNRVYZb/qRcTZRgB9DWf7SyL5B6iwaerzl6H
+ V/NgeKQknUqjdF1rx5cN+0oUlRjL/uqf2PRT1u/2iPSTrLx9ImfxO59U1v7bkAyqsRHD
+ 9d/OLcbkmN2dqLKXGEJEhw9wRWn6PflMZfMjZfJ6PgDh1lldO8RAGdA+f9Wv0Uqs/CHY
+ M6HHFEIenHnWt15i3RWPMrP09rbx4OkOqYNXz1V/3BWUxb3tRe+1IqwA2n/oEpR5c0PM
+ YcGRP1tNM3yqfxG53IdsPPiujOtSHSbvtWSyefvk7z3wSlVPYMzicea8BirSi8/Ag/R0
+ CJ5A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625912; x=1693230712;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=pB2qI48avq9qUXnFEl+wSnmS8SG0cxx3SZjicfp6H7M=;
+ b=L5dQ5I1/r76Ec7WfGFYq1iqhI4RaRdXt+61BNvttoSzkuI28cDeE9IYg5h41YdBzNd
+ t6sNriBN4Qc+mGdOBHQb7hoI62tzka68Qd18eexmWznS1lz73CJWNA6nW0T2heZpmRnx
+ frQSxlPNxv5FZ2eXSdZLRIhWG0T0L+B+G/6B665+1/N1tvTFCLsToL2GaiGnEskSn3rJ
+ wQPY7b2lG/xkfWZiNERig8/6ZMW5R3QQDdOucA/FVYuHY4/dr+9UuPEHaimYzTwzN6AM
+ aehqXj0h7YO8NjF9HG1n1T4hEYq0FKqbcb2t+hLAUBpzGBjLNrpCdWa9LzQWN0EEJw8H
+ /ijQ==
+X-Gm-Message-State: AOJu0YwwdmeqIA0FUSFZkbrYH8d4F3YWnny6MkSqZvX6DQEtu9Y/TVK7
+ x418Ed0mXh7BUNyNIuPNquOOpbM3J+o=
+X-Google-Smtp-Source: 
+ AGHT+IFpiAY2BjXpJaKJJodzwN7aKj9YFF3eAkfmZgRFnB94o3W7mQtEZgXERHeKNVbIpRB5HlMypw==
+X-Received: by 2002:a05:6000:1205:b0:31c:4f80:9f7 with SMTP id
+ e5-20020a056000120500b0031c4f8009f7mr1593479wrx.45.1692625912317;
+ Mon, 21 Aug 2023 06:51:52 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.50
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:51 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 12/13] video: Always compile cache flushing code
+Date: Mon, 21 Aug 2023 16:51:09 +0300
+Message-Id: <20230821135111.3558478-13-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Alexander Graf <agraf@csgraf.de>
+
+The dcache flushing code path was conditional on ARM && !DCACHE config
+options. However, dcaches exist on other platforms as well and may need
+clearing if their driver requires it.
+
+Simplify the compile logic and always enable the dcache flush logic in
+the video core. That way, drivers can always rely on it to call the arch
+specific callbacks.
+
+This will increase code size for non-ARM platforms with CONFIG_VIDEO=y
+slightly.
+
+Reported-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Signed-off-by: Alexander Graf <agraf@csgraf.de>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+(no changes since v4)
+
+Changes in v4:
+- Add patch "video: Always compile cache flushing code"
+
+ drivers/video/video-uclass.c | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/video-uclass.c b/drivers/video/video-uclass.c
+index c79499252a22..3f9ddaadd15d 100644
+--- a/drivers/video/video-uclass.c
++++ b/drivers/video/video-uclass.c
+@@ -377,11 +377,13 @@ void video_damage(struct udevice *vid, int x, int y, int width, int height)
+ 	priv->damage.yend = max(yend, priv->damage.yend);
+ }
+ 
+-#if defined(CONFIG_ARM) && !CONFIG_IS_ENABLED(SYS_DCACHE_OFF)
+ static void video_flush_dcache(struct udevice *vid)
+ {
+ 	struct video_priv *priv = dev_get_uclass_priv(vid);
+ 
++	if (CONFIG_IS_ENABLED(SYS_DCACHE_OFF))
++		return;
++
+ 	if (!priv->flush_dcache)
+ 		return;
+ 
+@@ -410,7 +412,6 @@ static void video_flush_dcache(struct udevice *vid)
+ 		}
+ 	}
+ }
+-#endif
+ 
+ static void video_flush_copy(struct udevice *vid)
+ {
+@@ -449,14 +450,9 @@ int video_sync(struct udevice *vid, bool force)
+ 			return ret;
+ 	}
+ 
+-	/*
+-	 * flush_dcache_range() is declared in common.h but it seems that some
+-	 * architectures do not actually implement it. Is there a way to find
+-	 * out whether it exists? For now, ARM is safe.
+-	 */
+-#if defined(CONFIG_ARM) && !CONFIG_IS_ENABLED(SYS_DCACHE_OFF)
+ 	video_flush_dcache(vid);
+-#elif defined(CONFIG_VIDEO_SANDBOX_SDL)
++
++#if defined(CONFIG_VIDEO_SANDBOX_SDL)
+ 	static ulong last_sync;
+ 
+ 	if (force || get_timer(last_sync) > 100) {
+
+From patchwork Mon Aug 21 13:51:10 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+X-Patchwork-Id: 1823656
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20221208 header.b=LXQ9F9oF;
+	dkim-atps=neutral
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=patchwork.ozlabs.org)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4RTv8G1ylrz1yYZ
+	for <incoming@patchwork.ozlabs.org>; Mon, 21 Aug 2023 23:53:34 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id D63BC87082;
+	Mon, 21 Aug 2023 15:51:59 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="LXQ9F9oF";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 6DC358709F; Mon, 21 Aug 2023 15:51:58 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com
+ [IPv6:2a00:1450:4864:20::329])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id B9E5887094
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 15:51:55 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=alpernebiyasak@gmail.com
+Received: by mail-wm1-x329.google.com with SMTP id
+ 5b1f17b1804b1-3fee5ddc23eso19328245e9.1
+ for <u-boot@lists.denx.de>; Mon, 21 Aug 2023 06:51:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1692625915; x=1693230715;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=q4KbQNgBgg/jRM/b8KJaE0YjvGZTzMRikT8MXE6mjwI=;
+ b=LXQ9F9oF17Es3W44Ien7NWJ7ymwABfjmSOFUn1nlvsBdcyw9b3O/o8ulQCpUwqhXho
+ Lsoff11Pmwlo87siidtGiRDX/BRiaZ8rBVWjS3jgK+U6RDPcwNCfR7otgNlLLaNyAd4w
+ BCXHT1+90WvAX/9alOvPUYlvUkP1t/S15/C+bUJWxok5Nf6l5iGthuNMWvZFFiUdQ8yR
+ 02AJastvoFpsYlAJI+JY69q6OhIhuxvdeDVc81dEOKzKkkEOdENJDmT6pJI4fiWlgwEE
+ iSJz97xC4lCSs+y5RPJTJfxE97zWwduKphPAN75dLRw0vnBYyqeXIo4ERx4uO7ku2jHf
+ 8feQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1692625915; x=1693230715;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=q4KbQNgBgg/jRM/b8KJaE0YjvGZTzMRikT8MXE6mjwI=;
+ b=VOZaSadRyfgFoQTc22AZ+r/0BSY4/MskC2GhVnMFg1gAc1bBAg7PJOyNu3x0V3ICuX
+ w68LWLVRLSaTmnF46xARtATTh8hJhyj7k3/oD4mNclUIyfmx/9vTSXJLn1MsG6m3TL8z
+ l5QNyUjNlgAK+YeuYH6zQl/yp5lmAF4EaOg5ITz+eLN2lf10QPYS18/bVbvNQ0Q2cwIN
+ FH+i7NhTRVoeExDFNVEFO11ZI3CJiAzpMC4WhI6OucHDWGIzEGcQKOYu9FfgwOfF5dVY
+ Yc6qjX3w9zhbwV3LA/grMncdSA9joMxVkWJwvFFD+6AlVLgin7DH8EDaIOtENT/RD/qq
+ Hjvw==
+X-Gm-Message-State: AOJu0YyYX84n+767GB59OryFC5m/WbElRHO2Ix8D2HaL8Wnef45wnjme
+ 9nuXLuU5B1juuVwSn7QqTlnSVvjWNGQ=
+X-Google-Smtp-Source: 
+ AGHT+IER2mHBuKBsYnQ3qf+DOtUzSQystkj8v17bWgFVK+zSLUhwLW9BOExvB2cO0RXSrx1vnjzR/w==
+X-Received: by 2002:adf:e711:0:b0:317:e542:80a8 with SMTP id
+ c17-20020adfe711000000b00317e54280a8mr4968619wrm.15.1692625915025;
+ Mon, 21 Aug 2023 06:51:55 -0700 (PDT)
+Received: from ALPER-PC.. ([178.233.24.1]) by smtp.gmail.com with ESMTPSA id
+ r11-20020a5d4e4b000000b00317b063590fsm12600049wrt.55.2023.08.21.06.51.52
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Aug 2023 06:51:54 -0700 (PDT)
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Svyatoslav Ryhel <clamor95@gmail.com>, Alexander Graf <agraf@csgraf.de>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Andrew Davis <afd@ti.com>,
+ Da Xue <da@libre.computer>, Heinrich Schuchardt <xypron.glpk@gmx.de>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ Patrick Delaunay <patrick.delaunay@foss.st.com>,
+ Derald Woods <woods.technical@gmail.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ uboot-stm32@st-md-mailman.stormreply.com, Simon Glass <sjg@chromium.org>,
+ Matthias Brugger <mbrugger@suse.com>, u-boot-amlogic@groups.io,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH v5 13/13] video: Enable VIDEO_DAMAGE for drivers that need it
+Date: Mon, 21 Aug 2023 16:51:10 +0300
+Message-Id: <20230821135111.3558478-14-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+References: <20230821135111.3558478-1-alpernebiyasak@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Alexander Graf <agraf@csgraf.de>
+
+Some drivers call video_set_flush_dcache() to indicate that they want to
+have the dcache flushed for the frame buffer. These drivers benefit from
+our new video damage control, because we can reduce the amount of memory
+that gets flushed significantly.
+
+This patch enables video damage control for all device drivers that call
+video_set_flush_dcache() to make sure they benefit from it.
+
+Signed-off-by: Alexander Graf <agraf@csgraf.de>
+[Alper: Add to VIDEO_TIDSS, imply instead of select]
+Co-developed-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+
+Changes in v5:
+- Imply VIDEO_DAMAGE for video drivers instead of selecting it
+- Imply VIDEO_DAMAGE also for VIDEO_TIDSS
+
+Changes in v4:
+- Add patch "video: Enable VIDEO_DAMAGE for drivers that need it"
+
+ arch/arm/mach-omap2/omap3/Kconfig | 1 +
+ arch/arm/mach-sunxi/Kconfig       | 1 +
+ drivers/video/Kconfig             | 8 ++++++++
+ drivers/video/exynos/Kconfig      | 1 +
+ drivers/video/imx/Kconfig         | 1 +
+ drivers/video/meson/Kconfig       | 1 +
+ drivers/video/rockchip/Kconfig    | 1 +
+ drivers/video/stm32/Kconfig       | 1 +
+ drivers/video/tegra20/Kconfig     | 1 +
+ drivers/video/tidss/Kconfig       | 1 +
+ 10 files changed, 17 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/omap3/Kconfig b/arch/arm/mach-omap2/omap3/Kconfig
+index 671e4791c67f..fd858f7b50f2 100644
+--- a/arch/arm/mach-omap2/omap3/Kconfig
++++ b/arch/arm/mach-omap2/omap3/Kconfig
+@@ -113,6 +113,7 @@ config TARGET_NOKIA_RX51
+ 	select CMDLINE_TAG
+ 	select INITRD_TAG
+ 	select REVISION_TAG
++	imply VIDEO_DAMAGE
+ 
+ config TARGET_TAO3530
+ 	bool "TAO3530"
+diff --git a/arch/arm/mach-sunxi/Kconfig b/arch/arm/mach-sunxi/Kconfig
+index 9d5df2c10273..fb4478ea32e8 100644
+--- a/arch/arm/mach-sunxi/Kconfig
++++ b/arch/arm/mach-sunxi/Kconfig
+@@ -813,6 +813,7 @@ config VIDEO_SUNXI
+ 	depends on !SUN50I_GEN_H6
+ 	select VIDEO
+ 	select DISPLAY
++	imply VIDEO_DAMAGE
+ 	imply VIDEO_DT_SIMPLEFB
+ 	default y
+ 	---help---
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index b3fbd9d7d9ca..185dbb1f8390 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -499,6 +499,7 @@ config VIDEO_LCD_ANX9804
+ 
+ config ATMEL_LCD
+ 	bool "Atmel LCD panel support"
++	imply VIDEO_DAMAGE
+ 	depends on ARCH_AT91
+ 
+ config ATMEL_LCD_BGR555
+@@ -508,6 +509,7 @@ config ATMEL_LCD_BGR555
+ 
+ config VIDEO_BCM2835
+ 	bool "Display support for BCM2835"
++	imply VIDEO_DAMAGE
+ 	help
+ 	  The graphics processor already sets up the display so this driver
+ 	  simply checks the resolution and then sets up the frame buffer with
+@@ -654,6 +656,7 @@ source "drivers/video/meson/Kconfig"
+ 
+ config VIDEO_MVEBU
+ 	bool "Armada XP LCD controller"
++	imply VIDEO_DAMAGE
+ 	---help---
+ 	Support for the LCD controller integrated in the Marvell
+ 	Armada XP SoC.
+@@ -688,6 +691,7 @@ config NXP_TDA19988
+ 
+ config ATMEL_HLCD
+ 	bool "Enable ATMEL video support using HLCDC"
++	imply VIDEO_DAMAGE
+ 	help
+ 	   HLCDC supports video output to an attached LCD panel.
+ 
+@@ -764,6 +768,7 @@ source "drivers/video/tidss/Kconfig"
+ 
+ config VIDEO_TEGRA124
+ 	bool "Enable video support on Tegra124"
++	imply VIDEO_DAMAGE
+ 	help
+ 	   Tegra124 supports many video output options including eDP and
+ 	   HDMI. At present only eDP is supported by U-Boot. This option
+@@ -778,6 +783,7 @@ source "drivers/video/imx/Kconfig"
+ 
+ config VIDEO_MXS
+ 	bool "Enable video support on i.MX28/i.MX6UL/i.MX7 SoCs"
++	imply VIDEO_DAMAGE
+ 	help
+ 	  Enable framebuffer driver for i.MX28/i.MX6UL/i.MX7 processors
+ 
+@@ -840,6 +846,7 @@ config VIDEO_DW_MIPI_DSI
+ 
+ config VIDEO_SIMPLE
+ 	bool "Simple display driver for preconfigured display"
++	imply VIDEO_DAMAGE
+ 	help
+ 	  Enables a simple generic display driver which utilizes the
+ 	  simple-framebuffer devicetree bindings.
+@@ -858,6 +865,7 @@ config VIDEO_DT_SIMPLEFB
+ 
+ config VIDEO_MCDE_SIMPLE
+ 	bool "Simple driver for ST-Ericsson MCDE with preconfigured display"
++	imply VIDEO_DAMAGE
+ 	help
+ 	  Enables a simple display driver for ST-Ericsson MCDE
+ 	  (Multichannel Display Engine), which reads the configuration from
+diff --git a/drivers/video/exynos/Kconfig b/drivers/video/exynos/Kconfig
+index 599d19d5ecc2..a2cf752aac03 100644
+--- a/drivers/video/exynos/Kconfig
++++ b/drivers/video/exynos/Kconfig
+@@ -12,6 +12,7 @@ config EXYNOS_DP
+ 
+ config EXYNOS_FB
+ 	bool "Exynos FIMD support"
++	imply VIDEO_DAMAGE
+ 
+ config EXYNOS_MIPI_DSIM
+ 	bool "Exynos MIPI DSI support"
+diff --git a/drivers/video/imx/Kconfig b/drivers/video/imx/Kconfig
+index 34e8b640595b..5db3e5c0499e 100644
+--- a/drivers/video/imx/Kconfig
++++ b/drivers/video/imx/Kconfig
+@@ -2,6 +2,7 @@
+ config VIDEO_IPUV3
+ 	bool "i.MX IPUv3 Core video support"
+ 	depends on VIDEO && (MX5 || MX6)
++	imply VIDEO_DAMAGE
+ 	help
+ 	  This enables framebuffer driver for i.MX processors working
+ 	  on the IPUv3(Image Processing Unit) internal graphic processor.
+diff --git a/drivers/video/meson/Kconfig b/drivers/video/meson/Kconfig
+index 3c2d72d019b8..fcf486ca0a3a 100644
+--- a/drivers/video/meson/Kconfig
++++ b/drivers/video/meson/Kconfig
+@@ -8,5 +8,6 @@ config VIDEO_MESON
+ 	bool "Enable Amlogic Meson video support"
+ 	depends on VIDEO
+ 	select DISPLAY
++	imply VIDEO_DAMAGE
+ 	help
+ 	  Enable Amlogic Meson Video Processing Unit video support.
+diff --git a/drivers/video/rockchip/Kconfig b/drivers/video/rockchip/Kconfig
+index 01804dcb1cc8..0f4550a29e38 100644
+--- a/drivers/video/rockchip/Kconfig
++++ b/drivers/video/rockchip/Kconfig
+@@ -11,6 +11,7 @@
+ menuconfig VIDEO_ROCKCHIP
+ 	bool "Enable Rockchip Video Support"
+ 	depends on VIDEO
++	imply VIDEO_DAMAGE
+ 	help
+ 	  Rockchip SoCs provide video output capabilities for High-Definition
+ 	  Multimedia Interface (HDMI), Low-voltage Differential Signalling
+diff --git a/drivers/video/stm32/Kconfig b/drivers/video/stm32/Kconfig
+index 48066063e4c5..c354c402c288 100644
+--- a/drivers/video/stm32/Kconfig
++++ b/drivers/video/stm32/Kconfig
+@@ -8,6 +8,7 @@
+ menuconfig VIDEO_STM32
+ 	bool "Enable STM32 video support"
+ 	depends on VIDEO
++	imply VIDEO_DAMAGE
+ 	help
+ 	  STM32 supports many video output options including RGB and
+ 	  DSI. This option enables these supports which can be used on
+diff --git a/drivers/video/tegra20/Kconfig b/drivers/video/tegra20/Kconfig
+index f5c4843e1191..2232b0b3ff53 100644
+--- a/drivers/video/tegra20/Kconfig
++++ b/drivers/video/tegra20/Kconfig
+@@ -1,6 +1,7 @@
+ config VIDEO_TEGRA20
+ 	bool "Enable Display Controller support on Tegra20 and Tegra 30"
+ 	depends on OF_CONTROL
++	imply VIDEO_DAMAGE
+ 	help
+ 	   T20/T30 support video output to an attached LCD panel as well as
+ 	   other options such as HDMI. Only the LCD is supported in U-Boot.
+diff --git a/drivers/video/tidss/Kconfig b/drivers/video/tidss/Kconfig
+index 95086f3a5d66..3291b3ceb8d5 100644
+--- a/drivers/video/tidss/Kconfig
++++ b/drivers/video/tidss/Kconfig
+@@ -11,6 +11,7 @@
+ menuconfig VIDEO_TIDSS
+ 	bool "Enable TIDSS video support"
+ 	depends on VIDEO
++	imply VIDEO_DAMAGE
+ 	help
+ 	  TIDSS supports  video output options LVDS and
+ 	  DPI . This option enables these supports which can be used on

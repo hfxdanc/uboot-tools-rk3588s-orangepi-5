@@ -1,0 +1,236 @@
+From 72400858605c085cf94a6cf5599269c8c39e3e72 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Tue, 14 Mar 2023 12:30:36 +0000
+Subject: [PATCH] rockchip: pinephone pro: add initial display support
+
+Add proposed upstream DT patches for display, disable edp,
+enable mipi and backlight, add required clocks.
+
+Clocks may not be required based on upstream review. Still
+need to add panel pieces, the rk3288-evb has an example for
+panel DT for u-boot, or may need to do a mipi addition to
+simple-panel, or something else.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ arch/arm/dts/rk3399-pinephone-pro.dts  | 123 +++++++++++++++++++++++++
+ configs/pinephone-pro-rk3399_defconfig |   3 +-
+ include/dt-bindings/clock/rk3399-cru.h |   2 +
+ 3 files changed, 127 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/rk3399-pinephone-pro.dts b/arch/arm/dts/rk3399-pinephone-pro.dts
+index 04403a76238..d0609d1b534 100644
+--- a/arch/arm/dts/rk3399-pinephone-pro.dts
++++ b/arch/arm/dts/rk3399-pinephone-pro.dts
+@@ -29,6 +29,12 @@
+ 		stdout-path = "serial2:115200n8";
+ 	};
+ 
++	backlight: backlight {
++		compatible = "pwm-backlight";
++		pwms = <&pwm0 0 1000000 0>;
++		pwm-delay-us = <10000>;
++	};
++
+ 	gpio-keys {
+ 		compatible = "gpio-keys";
+ 		pinctrl-names = "default";
+@@ -102,6 +108,32 @@
+ 		/* WL_REG_ON on module */
+ 		reset-gpios = <&gpio0 RK_PB2 GPIO_ACTIVE_LOW>;
+ 	};
++
++	/* MIPI DSI panel 1.8v supply */
++	vcc1v8_lcd: vcc1v8-lcd-regulator {
++		compatible = "regulator-fixed";
++		enable-active-high;
++		regulator-name = "vcc1v8_lcd";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		vin-supply = <&vcc3v3_sys>;
++		gpio = <&gpio3 RK_PA5 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&display_pwren1>;
++	};
++
++	/* MIPI DSI panel 2.8v supply */
++	vcc2v8_lcd: vcc2v8-lcd-regulator {
++		compatible = "regulator-fixed";
++		enable-active-high;
++		regulator-name = "vcc2v8_lcd";
++		regulator-min-microvolt = <2800000>;
++		regulator-max-microvolt = <2800000>;
++		vin-supply = <&vcc3v3_sys>;
++		gpio = <&gpio3 RK_PA1 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&display_pwren>;
++	};
+ };
+ 
+ &cpu_l0 {
+@@ -132,6 +164,11 @@
+ 	status = "okay";
+ };
+ 
++&gpu {
++	mali-supply = <&vdd_gpu>;
++	status = "okay";
++};
++
+ &i2c0 {
+ 	clock-frequency = <400000>;
+ 	i2c-scl-rising-time-ns = <168>;
+@@ -214,6 +251,9 @@
+ 				regulator-name = "vcc3v0_touch";
+ 				regulator-min-microvolt = <3000000>;
+ 				regulator-max-microvolt = <3000000>;
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
+ 			};
+ 
+ 			vcca1v8_codec: LDO_REG3 {
+@@ -347,6 +387,25 @@
+ 	};
+ };
+ 
++&i2c3 {
++	i2c-scl-rising-time-ns = <450>;
++	i2c-scl-falling-time-ns = <15>;
++	status = "okay";
++
++	touchscreen@14 {
++		compatible = "goodix,gt917s";
++		reg = <0x14>;
++		interrupt-parent = <&gpio3>;
++		interrupts = <RK_PB5 IRQ_TYPE_EDGE_RISING>;
++		irq-gpios = <&gpio3 RK_PB5 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpio3 RK_PB4 GPIO_ACTIVE_HIGH>;
++		AVDD28-supply = <&vcc3v0_touch>;
++		VDDIO-supply = <&vcc3v0_touch>;
++		touchscreen-size-x = <720>;
++		touchscreen-size-y = <1440>;
++	};
++};
++
+ &io_domains {
+ 	bt656-supply = <&vcc1v8_dvp>;
+ 	audio-supply = <&vcca1v8_codec>;
+@@ -355,6 +414,40 @@
+ 	status = "okay";
+ };
+ 
++&mipi_dsi {
++	status = "okay";
++	clock-master;
++
++	ports {
++		mipi_out: port@1 {
++			#address-cells = <0>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			mipi_out_panel: endpoint {
++				remote-endpoint = <&mipi_in_panel>;
++			};
++		};
++	};
++
++	panel@0 {
++		compatible = "hannstar,hsd060bhw4";
++		reg = <0>;
++		backlight = <&backlight>;
++		reset-gpios = <&gpio4 RK_PD1 GPIO_ACTIVE_LOW>;
++		vcc-supply = <&vcc2v8_lcd>;
++		iovcc-supply = <&vcc1v8_lcd>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&display_rst_l>;
++
++		port {
++			mipi_in_panel: endpoint {
++				remote-endpoint = <&mipi_out_panel>;
++			};
++		};
++	};
++};
++
+ &pmu_io_domains {
+ 	pmu1830-supply = <&vcc_1v8>;
+ 	status = "okay";
+@@ -387,6 +480,20 @@
+ 		};
+ 	};
+ 
++	dsi {
++		display_rst_l: display-rst-l {
++			rockchip,pins = <4 RK_PD1 RK_FUNC_GPIO &pcfg_pull_down>;
++		};
++
++		display_pwren: display-pwren {
++			rockchip,pins = <3 RK_PA1 RK_FUNC_GPIO &pcfg_pull_down>;
++		};
++
++		display_pwren1: display-pwren1 {
++			rockchip,pins = <3 RK_PA5 RK_FUNC_GPIO &pcfg_pull_down>;
++		};
++	};
++
+ 	sound {
+ 		vcc1v8_codec_en: vcc1v8-codec-en {
+ 			rockchip,pins = <3 RK_PA4 RK_FUNC_GPIO &pcfg_pull_down>;
+@@ -422,6 +529,10 @@
+ 	status = "okay";
+ };
+ 
++&pwm0 {
++	status = "okay";
++};
++
+ &sdmmc {
+ 	bus-width = <4>;
+ 	cap-sd-highspeed;
+@@ -472,3 +583,15 @@
+ &uart2 {
+ 	status = "okay";
+ };
++
++&vopb {
++	status = "okay";
++	assigned-clocks = <&cru DCLK_VOP0_DIV>, <&cru DCLK_VOP0>,
++			  <&cru ACLK_VOP0>, <&cru HCLK_VOP0>;
++	assigned-clock-rates = <0>, <0>, <400000000>, <100000000>;
++	assigned-clock-parents = <&cru PLL_CPLL>, <&cru DCLK_VOP0_FRAC>;
++};
++
++&vopb_mmu {
++	status = "okay";
++};
+diff --git a/configs/pinephone-pro-rk3399_defconfig b/configs/pinephone-pro-rk3399_defconfig
+index 54f9b90536c..1982131c805 100644
+--- a/configs/pinephone-pro-rk3399_defconfig
++++ b/configs/pinephone-pro-rk3399_defconfig
+@@ -96,6 +96,7 @@ CONFIG_USB_ETHER_RTL8152=y
+ CONFIG_VIDEO=y
+ CONFIG_DISPLAY=y
+ CONFIG_VIDEO_ROCKCHIP=y
+-CONFIG_DISPLAY_ROCKCHIP_EDP=y
++CONFIG_DISPLAY_ROCKCHIP_MIPI=y
++CONFIG_BACKLIGHT_PWM=y
+ CONFIG_SPL_TINY_MEMSET=y
+ CONFIG_ERRNO_STR=y
+diff --git a/include/dt-bindings/clock/rk3399-cru.h b/include/dt-bindings/clock/rk3399-cru.h
+index 211faf8fa89..7866e5266d2 100644
+--- a/include/dt-bindings/clock/rk3399-cru.h
++++ b/include/dt-bindings/clock/rk3399-cru.h
+@@ -131,6 +131,8 @@
+ #define DCLK_VOP0_DIV			182
+ #define DCLK_VOP1_DIV			183
+ #define DCLK_M0_PERILP			184
++#define DCLK_VOP0_FRAC                 185
++#define DCLK_VOP1_FRAC                 186
+ 
+ #define FCLK_CM0S			190
+ 
+-- 
+2.39.2
+

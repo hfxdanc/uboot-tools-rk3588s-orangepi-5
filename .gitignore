@@ -1,13 +1,5 @@
-*.tar
-*.tar.*
-*.jar
-*.exe
-*.msi
-*.zip
-*.tgz
-*.log
-*.log.*
-*.sig
+*.swp
+*.orig
+*~
 
-pkg/
-src/
+src/*.tar.bz2
